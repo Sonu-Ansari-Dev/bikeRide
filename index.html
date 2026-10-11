@@ -37,7 +37,7 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 /* ride */
 #ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto "k" auto/minmax(0,1fr)}
 #speedbox{grid-area:s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
-#speed{font-size:min(46vw,40dvh);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
+#speed{display:flex;align-items:stretch;justify-content:center;gap:2.5vmin;height:min(38dvh,calc((100vw - 4rem)/1.85))}
 #unit{font-size:1.6rem;color:var(--dim);font-weight:700;margin-top:.3rem}
 .grid{grid-area:t;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;border-top:1px solid var(--line);padding-top:.4rem;text-align:center}
 .grid b{display:block;font-size:clamp(1.6rem,6vmin,3.4rem);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
@@ -54,7 +54,7 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 #map{position:absolute;left:0;top:0;width:100%;height:100%;transition:transform .8s linear;will-change:transform}
 #mhud{position:absolute;z-index:1000;top:.5rem;left:.5rem;right:.5rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
 #mhud .sign{pointer-events:auto}
-#mSpeed{font-size:3rem;font-weight:800;background:var(--bg);padding:0 .6rem;border-radius:.6rem;line-height:1.15;font-variant-numeric:tabular-nums}
+#mSpeed{display:flex;gap:.25rem;height:2.8rem;background:var(--bg);padding:.3rem .6rem;border-radius:.6rem}
 #attr{position:absolute;z-index:1000;right:.3rem;bottom:.2rem;font-size:.75rem;background:#fffc;color:#000;padding:0 .3rem;border-radius:.3rem}
 .sign{width:clamp(3rem,11vmin,5.2rem);height:clamp(3rem,11vmin,5.2rem);border-radius:50%;background:#fff;border:.45rem solid #d4202c;color:#111;display:flex;align-items:center;justify-content:center;font-size:clamp(1.4rem,5vmin,2.4rem);font-weight:800}
 .sign.est{border-style:dashed;opacity:.75}.sign.none{border-color:var(--line);color:var(--dim);background:transparent}
@@ -87,16 +87,28 @@ button svg{display:block;margin:auto;width:1em;height:1em}
 #rstart{background:#1a73e8;color:#fff;border-color:#1a73e8}
 #res small,.trip small{display:block;color:var(--dim);font-size:.95rem;font-weight:500}
 #res .rh{color:var(--dim);font-size:.95rem;padding:.4rem .3rem .1rem}
-.day{color:var(--dim);font-size:1.1rem;margin-top:.6rem}
+
 .trip{border:1px solid var(--line);border-radius:.7rem;padding:.55rem .8rem;margin-top:.4rem}
 .trip>b{font-size:1.3rem}.trip .det{margin-top:.3rem}
+/* digital speed counter */
+.dg{height:100%;aspect-ratio:.56;display:block;transform:skewX(-6deg)}
+.dg polygon{fill:var(--line)}.dg polygon.on{fill:var(--fg)}
+body.over .dg polygon.on{fill:var(--bad)}
+/* side panel */
+#menu{border:0;padding:.2rem .4rem;font-size:1.7rem;line-height:0}
+#scrim{position:fixed;inset:0;z-index:2999;background:#0008}
+#side{position:fixed;top:0;bottom:0;left:0;width:min(100%,30rem);z-index:3000;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);transform:translateX(-100%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
+#side.open{transform:none;visibility:visible;transition:transform .25s}
+.sh{display:flex;gap:.5rem;padding:.5rem 1rem;border-bottom:1px solid var(--line)}.sh .sb{flex:1}.sh #sclose{flex:0;font-size:1.6rem;line-height:1;padding:.3rem .8rem}
+.pane{display:none;flex:1;min-height:0;overflow:auto;flex-direction:column;gap:.5rem;padding:.6rem 1rem}.pane.on{display:flex}
+.day{display:flex;justify-content:space-between;align-items:center;gap:.5rem;color:var(--dim);font-size:1.05rem;margin-top:.6rem}.day b{color:var(--fg);font-size:1.2rem}.day span{margin-left:auto}.day button{padding:.15rem .6rem;font-size:1rem}
 /* landscape phones: nav rail on the left, two-column ride screen */
 @media (orientation:landscape) and (max-height:560px){
   body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
   nav{flex-direction:column;border-top:0;border-right:1px solid var(--line)}
   nav button{flex:1;padding:0 1rem;box-shadow:none!important;font-size:1.2rem}
   #ride.on{grid-template:"s t" 1fr "s m" auto "s k" auto/1.3fr 1fr}
-  #speed{font-size:min(30vw,62dvh)}
+  #speed{height:min(58dvh,calc((50vw - 3rem)/1.85))}
   .grid{border:0;align-content:center}
   #plist{min-height:2rem}
 }
@@ -104,7 +116,7 @@ button svg{display:block;margin:auto;width:1em;height:1em}
 </style>
 </head>
 <body data-theme="night">
-<header><span id="clock">--:--</span><span><i id="gps"></i><span id="acc">GPS</span></span><span id="wx"></span><span id="bat"></span></header>
+<header><button id="menu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2.5H3zM3 10.75h18v2.5H3zM3 15.5h18V18H3z"/></svg></button><span id="clock">--:--</span><span><i id="gps"></i><span id="acc">GPS</span></span><span id="wx"></span><span id="bat"></span></header>
 <div id="navbar" hidden>
   <div id="nArrow">⬆</div><div id="nDist">--</div>
   <div id="nMid"><div id="nTxt">--</div><div id="nRem"></div></div>
@@ -112,13 +124,13 @@ button svg{display:block;margin:auto;width:1em;height:1em}
 </div>
 <main>
   <section id="ride" class="view on">
-    <div id="speedbox"><div id="signbox"><div class="sign">–</div><small id="lsrc"></small></div><div id="speed">0</div><div id="unit">km/h</div><div id="road" class="note"></div></div>
+    <div id="speedbox"><div id="signbox"><div class="sign">–</div><small id="lsrc"></small></div><div id="speed" role="img"></div><div id="unit">km/h</div><div id="road" class="note"></div></div>
     <div class="grid">
-      <div><b id="dist">0.0</b><small id="dlab">km</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>max</small></div>
-      <div><b id="time">0:00</b><small>riding</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
+      <div><b id="dist">0.0</b><small id="dlab">km today</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>top today</small></div>
+      <div><b id="time">0:00</b><small>riding today</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
     </div>
     <div id="mini"><span id="mTitle">Music off</span><button id="mPrev" aria-label="Previous"></button><button id="mPlay" aria-label="Play or pause"></button><button id="mNext" aria-label="Next"></button></div>
-    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button><button id="reset">End trip</button></div>
+    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button></div>
   </section>
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
@@ -139,15 +151,22 @@ button svg{display:block;margin:auto;width:1em;height:1em}
     <div id="plist"></div>
     <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
   </section>
-<section id="trips" class="view">
-    <div class="grid" id="tsum"><div><b id="tN">0</b><small>trips</small></div><div><b id="tKm">0</b><small id="tKmL">km total</small></div><div><b id="tH">0</b><small>hours riding</small></div></div>
+</main>
+<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button></nav>
+<div id="sos" hidden><h1>Crash detected</h1><div id="sosT">30</div><button id="sosOk">I'm OK</button><button id="sosSend" hidden>Send SOS message</button><button id="sosCall">Call 112</button></div>
+<div id="scrim" hidden></div>
+<aside id="side" aria-label="Menu"><div class="sh"><button class="sb on" data-p="trips">Timeline</button><button class="sb" data-p="safety">Safety</button><button id="sclose" aria-label="Close">×</button></div>
+  <section id="trips" class="pane on">
+    <div class="grid"><div><b id="tD">0</b><small id="tDL">km today</small></div><div><b id="tT">0:00</b><small>riding today</small></div><div><b id="tM">0</b><small id="tML">top km/h</small></div></div>
+    <div id="tweek"></div>
+    <p class="note" id="tTot"></p>
     <div id="tlist"></div>
-    <p class="note">Trips are recorded automatically when you start riding and saved only on this phone. Clearing browser data erases them, so use Export backup now and then.</p>
+    <p class="note">Your rides and daily stats are recorded automatically while the app is open, and saved only on this phone. Clearing browser data erases them, so use Export backup now and then.</p>
     <div class="row"><input id="rname" placeholder="Your name"><input id="rbike" placeholder="Bike, e.g. Classic 350"></div>
     <div class="row"><button id="tExp">Export backup</button><button id="tImp">Import</button><button id="tClr">Delete all</button></div>
     <input id="tFile" type="file" accept="application/json" hidden>
   </section>
-  <section id="safety" class="view">
+  <section id="safety" class="pane">
     <div class="row"><button id="sAl"></button><button id="sTol"></button></div>
     <div class="row"><button id="sEst"></button></div>
     <p class="note">Limits come from OpenStreetMap road data, fetched as you ride. Where a road has no limit tagged, the sign is dashed and shows an estimate for that road type. Tap any speed-limit sign to set a limit yourself.</p>
@@ -156,9 +175,7 @@ button svg{display:block;margin:auto;width:1em;height:1em}
     <div class="row"><button id="shareLoc">Share location</button><button id="sosMsg">SOS message</button><button id="call">Call 112</button></div>
     <p class="note">Crash detection is experimental: it watches for a hard impact followed by stopping, then sounds an alarm you can cancel. A web page cannot send texts by itself, so you tap Send. A break reminder also sounds every 2 hours of riding.</p>
   </section>
-</main>
-<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button><button data-v="trips">Trips</button><button data-v="safety">Safety</button></nav>
-<div id="sos" hidden><h1>Crash detected</h1><div id="sosT">30</div><button id="sosOk">I'm OK</button><button id="sosSend" hidden>Send SOS message</button><button id="sosCall">Call 112</button></div>
+</aside>
 <audio id="au"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
@@ -173,9 +190,15 @@ const fd=m=>S.unit==='kmh'?(m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1)+
 
 /* ---------- UI ---------- */
 function applyTheme(){document.body.dataset.theme=S.theme;ls.bd_theme=S.theme}
+const SG=(()=>{const t=9,h=(x1,x2,y)=>[[x1,y],[x1+t/2,y-t/2],[x2-t/2,y-t/2],[x2,y],[x2-t/2,y+t/2],[x1+t/2,y+t/2]],v=(x,y1,y2)=>[[x,y1],[x+t/2,y1+t/2],[x+t/2,y2-t/2],[x,y2],[x-t/2,y2-t/2],[x-t/2,y1+t/2]],f=a=>a.map(q=>q.join(',')).join(' ');
+  return{a:f(h(8,48,5)),b:f(v(51,8,47)),c:f(v(51,53,92)),d:f(h(8,48,95)),e:f(v(5,53,92)),f:f(v(5,8,47)),g:f(h(8,48,50))}})();
+const SD={0:'abcdef',1:'bc',2:'abdeg',3:'abcdg',4:'bcfg',5:'acdfg',6:'acdefg',7:'abc',8:'abcdefg',9:'abcdfg'};
+const digit=ch=>{const on=SD[ch]||'';return '<svg class="dg" viewBox="0 0 56 100" aria-hidden="true">'+Object.keys(SG).map(k=>`<polygon class="${on.includes(k)?'on':''}" points="${SG[k]}"/>`).join('')+'</svg>'};
+const digits=n=>String(n).padStart(3,' ').slice(-3).split('').map(digit).join('');
+let spShown=-1;
 function render(v){
-  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph';$('#dlab').textContent=S.unit==='kmh'?'km':'mi';
-  if(v!=null){const t=Math.round(v*mult());$('#speed').textContent=t;$('#mSpeed').textContent=t}
+  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph';$('#dlab').textContent=S.unit==='kmh'?'km today':'mi today';
+  if(v!=null){const t=Math.round(v*mult());if(t!==spShown){spShown=t;$('#speed').innerHTML=$('#mSpeed').innerHTML=digits(t);$('#speed').setAttribute('aria-label',t+(S.unit==='kmh'?' kilometres per hour':' miles per hour'))}}
   $('#dist').textContent=(S.dist*dmul()).toFixed(1);
   $('#avg').textContent=S.mov>5?(S.dist/S.mov*mult()).toFixed(1):'0.0';
   $('#max').textContent=Math.round(S.max*mult());$('#time').textContent=fmtT(S.mov);
@@ -192,7 +215,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
 $('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
 $('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
 $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
-$('#reset').onclick=()=>{if(confirm('End and save this trip?'))endTrip()};
+
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
 addEventListener('resize',()=>{sizeMap();mapFollowNow()});
 applyTheme();render(0);
@@ -206,7 +229,7 @@ function onPos(p){
   if(v==null)v=dt>0?d/dt:0;
   if(v<.8||c.accuracy>50)v=0;
   if(c.accuracy<=50){
-    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v)}
+    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);if(T.cur){T.cur.dist+=d;T.cur.mov+=dt;T.cur.max=Math.max(T.cur.max,v)}}
     S.last=c;S.lastT=t;
   }
   render(v);
@@ -564,25 +587,29 @@ async function place(lat,lon){
   try{const j=await(await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=en&lat=${lat}&lon=${lon}`)).json();const a=j.address||{};
     return a.suburb||a.neighbourhood||a.village||a.town||a.city_district||a.city||a.road||j.name||''}catch(e){return ''}
 }
-function resetCounters(){S.dist=S.max=S.mov=A.lb=0;S.last=null;save();render(0)}
-function tripTick(c,v){ // trips start automatically when you move, end after 15 min stopped
+function dayCheck(){ // Ride-screen stats are for today and reset at midnight
+  const k=new Date().toDateString();if(ls.bd_day===k)return;ls.bd_day=k;
+  if(T.cur&&T.ready)endTrip();S.dist=S.max=S.mov=A.lb=0;S.last=null;save();render(0);
+}
+dayCheck();
+function tripTick(c,v){ // a trip starts when you move and ends after 15 min stopped
   if(!T.ready||v<2||c.accuracy>50)return;
   T.last=Date.now();
-  if(!T.cur){const tr=T.cur={id:Date.now(),start:Date.now(),pts:[],ov:0,sName:'',eName:''};resetCounters();place(c.latitude,c.longitude).then(n=>tr.sName=n)}
+  if(!T.cur){const tr=T.cur={id:Date.now(),start:Date.now(),pts:[],ov:0,dist:0,mov:0,max:0,sName:'',eName:''};place(c.latitude,c.longitude).then(n=>tr.sName=n)}
   const q=T.cur.pts,l=q[q.length-1];
   if(!l||hav(l[0],l[1],c.latitude,c.longitude)>=25)q.push([+c.latitude.toFixed(5),+c.longitude.toFixed(5),Math.round(v*3.6),Math.round((Date.now()-T.cur.start)/1000)]);
   if(Date.now()-T.sv>30000){T.sv=Date.now();DB.put('kv',T.cur,'cur')}
 }
 async function endTrip(){
-  const c=T.cur,d=S.dist,m=S.mov,x=S.max;T.cur=null;resetCounters();DB.del('kv','cur');
-  if(c&&c.pts.length>=3&&d>=300){
-    Object.assign(c,{end:T.last||Date.now(),dist:d,mov:m,max:x,avg:m>5?d/m:0});
+  const c=T.cur;T.cur=null;DB.del('kv','cur');
+  if(c&&c.pts.length>=3&&c.dist>=300){
+    Object.assign(c,{end:T.last||Date.now(),avg:c.mov>5?c.dist/c.mov:0});
     await DB.put('trips',c);renderTrips();
     const l=c.pts[c.pts.length-1];c.eName=await place(l[0],l[1]);await DB.put('trips',c);
   }
   renderTrips();
 }
-setInterval(()=>{if(T.cur&&T.ready&&Date.now()-T.last>9e5)endTrip()},60000);
+setInterval(()=>{dayCheck();if(T.cur&&T.ready&&Date.now()-T.last>9e5)endTrip()},60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&T.cur)DB.put('kv',T.cur,'cur')});
 const dayLabel=d=>{const n=new Date(),y=new Date(Date.now()-864e5),same=(a,b)=>a.toDateString()===b.toDateString();return same(d,n)?'Today':same(d,y)?'Yesterday':d.toLocaleDateString([],{weekday:'long',day:'numeric',month:'short'})};
 function svgTrack(pts){
@@ -592,39 +619,59 @@ function svgTrack(pts){
   const xy=p=>[ox+(p[1]*k-a)*sc,oy+(-p[0]-c)*sc],q=pts.map(p=>xy(p).map(n=>n.toFixed(1)).join(',')),s=xy(pts[0]),e=xy(pts[pts.length-1]);
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:32dvh;background:var(--line);border-radius:.5rem;margin:.4rem 0"><polyline points="${q.join(' ')}" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${s[0]}" cy="${s[1]}" r="5" fill="var(--ok)"/><circle cx="${e[0]}" cy="${e[1]}" r="5" fill="var(--bad)"/></svg>`;
 }
-function showTrip(t){
-  document.querySelector('nav [data-v=mapv]').click();
+function showTrips(list,title,sub){
+  closeSide();document.querySelector('nav [data-v=mapv]').click();
   setTimeout(()=>{
     if(!map)return;clearTrip();clearRoutes();
+    const lines=list.filter(t=>t.pts.length>1).map(t=>L.polyline(t.pts.map(q=>[q[0],q[1]]),{color:'#ffb81c',weight:5,smoothFactor:2}));
+    if(!lines.length)return;
     if(M.mode==='head'){M.restore=true;$('#mmode').click()}
-    tripL=L.polyline(t.pts.map(p=>[p[0],p[1]]),{color:'#ffb81c',weight:5,smoothFactor:2}).addTo(map);
+    tripL=L.featureGroup(lines).addTo(map);
     sizeMap();map.fitBounds(tripL.getBounds(),{paddingTopLeft:[30,30],paddingBottomRight:[30,150]});
     S.follow=false;$('#follow').textContent='Re-centre';
-    $('#rcard').hidden=false;$('#rtitle').textContent='Trip · '+new Date(t.start).toLocaleDateString([],{day:'numeric',month:'short'});
-    $('#rsub').textContent=fd(t.dist)+' · '+fmtT(t.mov)+' riding';$('#rchips').innerHTML='';$('#rstart').hidden=$('#rsave').hidden=true;
-  },150);
+    $('#rcard').hidden=false;$('#rtitle').textContent=title;$('#rsub').textContent=sub;$('#rchips').innerHTML='';$('#rstart').hidden=$('#rsave').hidden=true;
+  },200);
 }
 function toggleTrip(c,t){
   const o=c.querySelector('.det');if(o)return o.remove();
   const d=document.createElement('div');d.className='det';d.onclick=e=>e.stopPropagation();
-  d.innerHTML=(t.pts.length>1?svgTrack(t.pts):'')+'<div class="row"><button class="tmap">Show on map</button><button class="tdel">Delete</button></div>';
-  d.querySelector('.tmap').onclick=()=>showTrip(t);
-  d.querySelector('.tdel').onclick=async()=>{if(confirm('Delete this trip?')){await DB.del('trips',t.id);renderTrips()}};
+  d.innerHTML=(t.pts.length>1?svgTrack(t.pts):'')+'<div class="row"><button class="tmap">Show on map</button>'+(t.live?'':'<button class="tdel">Delete</button>')+'</div>';
+  d.querySelector('.tmap').onclick=()=>showTrips([t],'Trip · '+new Date(t.start).toLocaleDateString([],{day:'numeric',month:'short'}),fd(t.dist)+' · '+fmtT(t.mov)+' riding');
+  const del=d.querySelector('.tdel');if(del)del.onclick=async()=>{if(confirm('Delete this trip?')){await DB.del('trips',t.id);renderTrips()}};
   c.append(d);
 }
+function weekChart(list){
+  const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(6-i));return{d,km:0}});
+  list.forEach(t=>{const k=new Date(t.start);k.setHours(0,0,0,0);const x=days.find(y=>y.d.getTime()===k.getTime());if(x)x.km+=t.dist});
+  const mx=Math.max(1,...days.map(x=>x.km));
+  return `<svg viewBox="0 0 300 108" style="width:100%" role="img" aria-label="Distance per day, last 7 days">`+days.map((x,i)=>{
+    const h=Math.round(x.km/mx*58),X=i*43+6;
+    return `<rect x="${X}" y="${80-h}" width="32" height="${Math.max(h,2)}" rx="4" fill="${i===6?'var(--acc)':'var(--dim)'}"/><text x="${X+16}" y="98" text-anchor="middle" font-size="12" fill="var(--dim)">${x.d.toLocaleDateString([],{weekday:'narrow'})}</text>`+(x.km?`<text x="${X+16}" y="${75-h}" text-anchor="middle" font-size="11" fill="var(--fg)">${Math.round(x.km*dmul())}</text>`:'');
+  }).join('')+'</svg>';
+}
 async function renderTrips(){
-  TR=((await DB.all('trips'))||[]).sort((a,b)=>b.start-a.start);
-  const km=TR.reduce((a,t)=>a+t.dist,0)+S.dist,hrs=TR.reduce((a,t)=>a+t.mov,0)+S.mov;
-  $('#tN').textContent=TR.length;$('#tKm').textContent=Math.round(km*dmul());$('#tKmL').textContent=S.unit==='kmh'?'km total':'mi total';$('#tH').textContent=(hrs/3600).toFixed(1);
-  const el=$('#tlist');el.innerHTML='';let day='';
-  if(!TR.length)el.innerHTML='<p class="note">No trips yet. Start riding and your first trip will appear here.</p>';
+  const saved=(await DB.all('trips'))||[];
+  const live=T.cur&&T.cur.dist>0?[{...T.cur,end:Date.now(),avg:T.cur.mov>5?T.cur.dist/T.cur.mov:0,live:true}]:[];
+  TR=[...live,...saved].sort((a,b)=>b.start-a.start);
+  const U=S.unit==='kmh'?'km':'mi';
+  $('#tD').textContent=(S.dist*dmul()).toFixed(1);$('#tDL').textContent=U+' today';$('#tT').textContent=fmtT(S.mov);$('#tM').textContent=Math.round(S.max*mult());$('#tML').textContent='top '+(S.unit==='kmh'?'km/h':'mph');
+  $('#tweek').innerHTML=weekChart(TR);
+  $('#tTot').textContent=`Last 7 days, ${U} per day. All time: ${TR.length} trips · ${Math.round(TR.reduce((a,t)=>a+t.dist,0)*dmul())} ${U} · ${(TR.reduce((a,t)=>a+t.mov,0)/3600).toFixed(1)} h riding`;
+  const el=$('#tlist');el.innerHTML='';
+  if(!TR.length){el.innerHTML='<p class="note">Nothing recorded yet. Keep the app open while you ride and your day will show up here.</p>';return}
+  const groups=new Map();TR.forEach(t=>{const k=new Date(t.start).toDateString();if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t)});
   const tm=x=>new Date(x).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  TR.forEach(t=>{
-    const dl=dayLabel(new Date(t.start));
-    if(dl!==day){day=dl;const h=document.createElement('div');h.className='day';h.textContent=dl;el.append(h)}
-    const c=document.createElement('div');c.className='trip';
-    c.innerHTML=`<b>${tm(t.start)} – ${tm(t.end)}</b><small>${esc(t.sName||'Start')} → ${esc(t.eName||'End')}</small><small>${fd(t.dist)} · ${fmtT(t.mov)} riding · avg ${Math.round(t.avg*mult())} · max ${Math.round(t.max*mult())} ${S.unit==='kmh'?'km/h':'mph'}${t.ov?' · '+t.ov+' alerts':''}</small>`;
-    c.onclick=()=>toggleTrip(c,t);el.append(c);
+  groups.forEach(list=>{
+    const dist=list.reduce((a,t)=>a+t.dist,0),mov=list.reduce((a,t)=>a+t.mov,0),top=Math.max(...list.map(t=>t.max)),dl=dayLabel(new Date(list[0].start));
+    const h=document.createElement('div');h.className='day';
+    h.innerHTML=`<b>${dl}</b><span>${fd(dist)} · ${fmtT(mov)} · top ${Math.round(top*mult())}</span><button>Map</button>`;
+    h.querySelector('button').onclick=()=>showTrips(list,dl,fd(dist)+' · '+list.length+(list.length>1?' trips':' trip'));
+    el.append(h);
+    list.forEach(t=>{
+      const c=document.createElement('div');c.className='trip';
+      c.innerHTML=`<b>${tm(t.start)} – ${t.live?'now':tm(t.end)}</b><small>${esc(t.sName||'Start')} → ${t.live?'…':esc(t.eName||'End')}</small><small>${fd(t.dist)} · ${fmtT(t.mov)} riding · avg ${Math.round(t.avg*mult())} · max ${Math.round(t.max*mult())} ${S.unit==='kmh'?'km/h':'mph'}${t.ov?' · '+t.ov+' alerts':''}</small>`;
+      c.onclick=()=>toggleTrip(c,t);el.append(c);
+    });
   });
 }
 $('#rname').value=ls.bd_name||'';$('#rbike').value=ls.bd_bike||'';
@@ -645,10 +692,25 @@ $('#tClr').onclick=async()=>{
 };
 DB.open().then(async()=>{
   const c=await DB.get('kv','cur');
-  if(c&&c.pts){T.cur=c;const l=c.pts[c.pts.length-1];T.last=c.start+(l?l[3]*1000:0)}
-  T.ready=true;if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
+  if(c&&c.pts){T.cur=Object.assign({dist:0,mov:0,max:0,ov:0},c);const l=c.pts[c.pts.length-1];T.last=c.start+(l?l[3]*1000:0)}
+  T.ready=true;dayCheck();if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
 });
 navigator.storage&&navigator.storage.persist&&navigator.storage.persist();
+/* side panel (Timeline + Safety) */
+let pane='trips';
+const sideShow=on=>{$('#side').classList.toggle('open',on);$('#scrim').hidden=!on};
+function openSide(p){
+  pane=p||pane;
+  document.querySelectorAll('.pane').forEach(e=>e.classList.toggle('on',e.id===pane));
+  document.querySelectorAll('.sb').forEach(b=>b.classList.toggle('on',b.dataset.p===pane));
+  sideShow(true);if(pane==='trips')renderTrips();
+  if(!(history.state&&history.state.side))history.pushState({side:1},'');
+}
+function closeSide(){if(history.state&&history.state.side)history.back();else sideShow(false)}
+addEventListener('popstate',()=>sideShow(false));
+$('#menu').onclick=()=>openSide();$('#sclose').onclick=$('#scrim').onclick=closeSide;
+document.querySelectorAll('.sb').forEach(b=>b.onclick=()=>openSide(b.dataset.p));
+setInterval(()=>{if($('#side').classList.contains('open')&&pane==='trips')renderTrips()},10000);
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
