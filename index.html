@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111315">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>Handlebar Dash</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#111315;--fg:#eef0ea;--dim:#8d9490;--acc:#ffb81c;--line:#2a2e31;--ok:#5fd38d;--bad:#ff5d4d}
+[data-theme=day]{--bg:#f6f5ef;--fg:#101214;--dim:#5b615d;--acc:#b36b00;--line:#cfcdc2;--ok:#1a7f45;--bad:#c42b1c}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed','Arial Narrow',sans-serif-condensed,sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:700;font-size:20px}
+button:active{background:var(--line)}
+header{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;font-size:24px;font-weight:700;border-bottom:1px solid var(--line)}
+header span{display:flex;gap:6px;align-items:center}
+#gps{width:12px;height:12px;border-radius:50%;background:var(--bad)}
+#gps.ok{background:var(--ok)}
+main{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;display:none;padding:10px 16px;overflow:auto}
+.view.on{display:flex;flex-direction:column}
+nav{display:flex;border-top:1px solid var(--line)}
+nav button{flex:1;border:0;border-radius:0;padding:14px 0;font-size:24px;color:var(--dim)}
+nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
+/* ride */
+#speedbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#speed{font-size:min(44vw,48vh);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
+#unit{font-size:28px;color:var(--dim);font-weight:700;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;border-top:1px solid var(--line);padding-top:8px}
+.grid div{text-align:center}
+.grid b{display:block;font-size:min(9vw,7vh);font-weight:700;font-variant-numeric:tabular-nums}
+.grid small{font-size:18px;color:var(--dim)}
+@media (orientation:landscape){
+  #ride.on{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  .grid{grid-template-columns:1fr 1fr;border-top:0;border-left:1px solid var(--line);padding:0 0 0 16px;align-content:center;gap:14px}
+  #speed{font-size:min(30vw,70vh)}
+}
+/* map */
+#map{flex:1;border-radius:12px;min-height:200px}
+[data-theme=night] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.row button{flex:1}
+/* music */
+#title{font-size:34px;font-weight:800;margin:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sub{color:var(--dim);font-size:20px;margin-bottom:10px}
+#seek{width:100%;accent-color:var(--acc);height:34px}
+.ctl{display:flex;gap:10px;margin:10px 0}
+.ctl button{flex:1;font-size:36px;padding:14px 0}
+#plist{flex:1;overflow:auto;border-top:1px solid var(--line);margin-top:8px}
+#plist div{padding:10px 4px;font-size:22px;border-bottom:1px solid var(--line)}
+#plist div.cur{color:var(--acc)}
+.note{color:var(--dim);font-size:18px;margin-top:8px;line-height:1.2}
+</style>
+</head>
+<body data-theme="night">
+<header>
+  <span id="clock">--:--</span>
+  <span><i id="gps"></i><span id="acc">GPS</span></span>
+  <span id="wx"></span>
+  <span id="bat"></span>
+</header>
+<main>
+  <section id="ride" class="view on">
+    <div id="speedbox"><div id="speed">0</div><div id="unit">km/h</div></div>
+    <div class="grid">
+      <div><b id="dist">0.0</b><small id="dlab">km</small></div>
+      <div><b id="avg">0.0</b><small>avg</small></div>
+      <div><b id="max">0</b><small>max</small></div>
+      <div><b id="time">0:00</b><small>riding</small></div>
+      <div><b id="hdg">--</b><small>heading</small></div>
+      <div><b id="alt">--</b><small>alt m</small></div>
+    </div>
+    <div class="row">
+      <button id="units">km/h ⇄ mph</button><button id="theme">Day / Night</button>
+      <button id="full">Fullscreen</button><button id="reset">Reset trip</button>
+    </div>
+  </section>
+  <section id="mapv" class="view">
+    <div id="map"></div>
+    <div class="row"><button id="nav">Navigate to…</button><button id="follow">Following</button></div>
+  </section>
+  <section id="music" class="view">
+    <div id="title">No track</div><div id="sub">Add music from your phone</div>
+    <input id="seek" type="range" min="0" max="100" value="0">
+    <div class="ctl"><button id="prev">⏮</button><button id="play">▶</button><button id="next">⏭</button></div>
+    <div class="row"><button id="add">Add songs</button><button id="spot">Spotify</button><button id="ytm">YT Music</button></div>
+    <input id="files" type="file" accept="audio/*" multiple hidden>
+    <div id="plist"></div>
+    <p class="note">Songs added here play inside the app. Spotify / YT Music open their own apps — control those from the phone's notification shade or a Bluetooth remote on the bars.</p>
+  </section>
+</main>
+<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button></nav>
+<audio id="au"></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s), ls=localStorage;
+const S={unit:ls.bd_unit||'kmh',theme:ls.bd_theme||'night',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
+const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const mult=()=>S.unit==='kmh'?3.6:2.23694, dm=()=>S.unit==='kmh'?.001:.000621371;
+const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${String(m).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`};
+const card=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
+
+/* ---------- UI ---------- */
+function applyTheme(){document.body.dataset.theme=S.theme;ls.bd_theme=S.theme}
+function render(spd){
+  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph'; $('#dlab').textContent=S.unit==='kmh'?'km':'mi';
+  if(spd!=null)$('#speed').textContent=Math.round(spd*mult());
+  $('#dist').textContent=(S.dist*dm()).toFixed(1);
+  $('#avg').textContent=S.mov>5?(S.dist/S.mov*mult()).toFixed(1):'0.0';
+  $('#max').textContent=Math.round(S.max*mult());
+  $('#time').textContent=fmtT(S.mov);
+}
+function save(){ls.bd_dist=S.dist;ls.bd_max=S.max;ls.bd_mov=S.mov;ls.bd_unit=S.unit}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button,.view').forEach(e=>e.classList.remove('on'));
+  b.classList.add('on');$('#'+b.dataset.v).classList.add('on');
+  if(b.dataset.v==='mapv'){initMap();setTimeout(()=>map&&map.invalidateSize(),50)}
+});
+$('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
+$('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
+$('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+$('#reset').onclick=()=>{if(confirm('Reset trip?')){S.dist=S.max=S.mov=0;S.last=null;track&&track.setLatLngs([]);save();render(0)}};
+setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
+applyTheme();render(0);
+
+/* ---------- GPS ---------- */
+function onPos(p){
+  const c=p.coords,t=p.timestamp;S.pos=c;
+  $('#gps').className=c.accuracy<=30?'ok':'';$('#acc').textContent='±'+Math.round(c.accuracy)+'m';
+  let v=c.speed,d=0,dt=0;
+  if(S.last){d=hav(S.last.latitude,S.last.longitude,c.latitude,c.longitude);dt=Math.min((t-S.lastT)/1000,10)}
+  if(v==null)v=dt>0?d/dt:0;
+  if(v<.8||c.accuracy>50)v=0;
+  if(c.accuracy<=50){
+    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);if(track)track.addLatLng([c.latitude,c.longitude])}
+    S.last=c;S.lastT=t;
+  }
+  render(v);
+  if(c.heading!=null&&!isNaN(c.heading)&&v>0)$('#hdg').textContent=card(c.heading);
+  if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
+  if(map){me.setLatLng([c.latitude,c.longitude]);if(S.follow)map.panTo([c.latitude,c.longitude],{animate:true})}
+  save();weather();
+}
+function onErr(e){$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'}
+if('geolocation' in navigator)navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+else $('#acc').textContent='No GPS support';
+
+/* ---------- keep screen on ---------- */
+let wl;async function lock(){try{wl=await navigator.wakeLock.request('screen')}catch(e){}}
+lock();document.addEventListener('visibilitychange',()=>{if(!document.hidden)lock()});
+document.addEventListener('click',()=>{if(!wl||wl.released)lock()},{once:true});
+
+/* ---------- battery & weather ---------- */
+navigator.getBattery&&navigator.getBattery().then(b=>{const u=()=>$('#bat').textContent=Math.round(b.level*100)+'%'+(b.charging?'⚡':'');u();b.onlevelchange=b.onchargingchange=u});
+let wxT=0;function weather(){
+  if(!S.pos||Date.now()-wxT<9e5)return;wxT=Date.now();
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.pos.latitude}&longitude=${S.pos.longitude}&current=temperature_2m,precipitation`)
+   .then(r=>r.json()).then(j=>{const c=j.current;$('#wx').textContent=Math.round(c.temperature_2m)+'°'+(c.precipitation>0?' 🌧':'')}).catch(()=>{});
+}
+
+/* ---------- map ---------- */
+let map,me,track;
+function initMap(){
+  if(map||!window.L)return;
+  map=L.map('map',{zoomControl:false}).setView([S.pos?S.pos.latitude:15.49,S.pos?S.pos.longitude:73.83],16);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+  track=L.polyline([],{color:'#ffb81c',weight:5}).addTo(map);
+  me=L.circleMarker(S.pos?[S.pos.latitude,S.pos.longitude]:[0,0],{radius:9,color:'#fff',weight:3,fillColor:'#ff5d4d',fillOpacity:1}).addTo(map);
+  map.on('dragstart',()=>{S.follow=false;$('#follow').textContent='Re-centre'});
+}
+$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';if(S.pos&&map)map.setView([S.pos.latitude,S.pos.longitude],16)};
+$('#nav').onclick=()=>{const q=prompt('Where to?');if(q)location.href='https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+encodeURIComponent(q)};
+
+/* ---------- music ---------- */
+const au=$('#au');let list=[],cur=-1;
+$('#add').onclick=()=>$('#files').click();
+$('#files').onchange=e=>{[...e.target.files].forEach(f=>list.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)}));drawList();if(cur<0&&list.length)load(0,true)};
+function drawList(){$('#plist').innerHTML='';list.forEach((t,i)=>{const d=document.createElement('div');d.textContent=t.name;d.className=i===cur?'cur':'';d.onclick=()=>load(i,true);$('#plist').append(d)})}
+function load(i,go){if(!list.length)return;cur=(i+list.length)%list.length;au.src=list[cur].url;$('#title').textContent=list[cur].name;$('#sub').textContent=`Track ${cur+1} of ${list.length}`;drawList();
+  if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:list[cur].name,artist:'Handlebar Dash'});
+  go&&au.play()}
+const toggle=()=>au.paused?au.play():au.pause();
+$('#play').onclick=toggle;$('#next').onclick=()=>load(cur+1,true);$('#prev').onclick=()=>au.currentTime>3?au.currentTime=0:load(cur-1,true);
+au.onplay=()=>$('#play').textContent='⏸';au.onpause=()=>$('#play').textContent='▶';au.onended=()=>load(cur+1,true);
+au.ontimeupdate=()=>{if(au.duration)$('#seek').value=au.currentTime/au.duration*100};
+$('#seek').oninput=e=>{if(au.duration)au.currentTime=e.target.value/100*au.duration};
+if('mediaSession' in navigator){const m=navigator.mediaSession;m.setActionHandler('play',()=>au.play());m.setActionHandler('pause',()=>au.pause());m.setActionHandler('nexttrack',()=>load(cur+1,true));m.setActionHandler('previoustrack',()=>load(cur-1,true))}
+$('#spot').onclick=()=>location.href='intent://#Intent;package=com.spotify.music;end';
+$('#ytm').onclick=()=>location.href='intent://#Intent;package=com.google.android.apps.youtube.music;end';
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
