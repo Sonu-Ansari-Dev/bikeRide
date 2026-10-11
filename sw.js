@@ -1,6 +1,7 @@
-const C='bikedash-v9';
+const C='bikedash-v10';
 const A=['./','index.html','manifest.json','icon.svg','leaflet.js','leaflet.css','leaflet-rotate.js'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(A.map(u=>new Request(u,{cache:'reload'})))));self.skipWaiting()});
+// each file is cached on its own, so one missing file can never block the install
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(A.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>{})))));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});
 // installed app: open instantly from the cache (works offline), refresh the cache in the background
 self.addEventListener('fetch',e=>{

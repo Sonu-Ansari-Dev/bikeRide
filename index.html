@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <title>Handlebar Dash</title>
-<link rel="stylesheet" href="leaflet.css">
+<link rel="stylesheet" href="leaflet.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#111315;--fg:#eef0ea;--dim:#8d9490;--acc:#ffb81c;--line:#2a2e31;--ok:#5fd38d;--bad:#ff5d4d}
@@ -105,6 +105,7 @@ body.over .dg polygon.on{fill:var(--bad)}
 .sh{display:flex;gap:.5rem;padding:.5rem 1rem;border-bottom:1px solid var(--line)}.sh .sb{flex:1}.sh #sclose{flex:0;font-size:1.6rem;line-height:1;padding:.3rem .8rem}
 .pane{display:none;flex:1;min-height:0;overflow:auto;flex-direction:column;gap:.5rem;padding:.6rem 1rem}.pane.on{display:flex}
 .day{display:flex;justify-content:space-between;align-items:center;gap:.5rem;color:var(--dim);font-size:1.05rem;margin-top:.6rem}.day b{color:var(--fg);font-size:1.2rem}.day span{margin-left:auto}.day button{padding:.15rem .6rem;font-size:1rem}
+#mapmsg{position:absolute;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;text-align:center;padding:1.5rem;color:var(--dim);font-size:1.2rem;pointer-events:none}
 #compass{position:absolute;z-index:1000;top:4.6rem;left:.5rem;width:2.8rem;height:2.8rem;padding:0;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
 #compass svg{width:1.6rem;height:1.6rem}
 .me.nohead path{display:none}
@@ -141,7 +142,7 @@ body.over .dg polygon.on{fill:var(--bad)}
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
-    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><button id="compass" hidden aria-label="Reset to north"><svg viewBox="0 0 24 24"><path d="M12 2 17 13H7z" fill="#d93025"/><path d="M12 22 7 13h10z" fill="currentColor" opacity=".55"/></svg></button><div id="attr">© OpenStreetMap</div><div id="rcard" hidden><div id="rtitle"></div><div id="rsub"></div><div id="rchips"></div><div class="row"><button id="rstart">Start</button><button id="rsave">Save</button><button id="rclose">Close</button></div></div></div>
+    <div id="mapw"><div id="map"></div><div id="mapmsg" hidden></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><button id="compass" hidden aria-label="Reset to north"><svg viewBox="0 0 24 24"><path d="M12 2 17 13H7z" fill="#d93025"/><path d="M12 22 7 13h10z" fill="currentColor" opacity=".55"/></svg></button><div id="attr">© OpenStreetMap</div><div id="rcard" hidden><div id="rtitle"></div><div id="rsub"></div><div id="rchips"></div><div class="row"><button id="rstart">Start</button><button id="rsave">Save</button><button id="rclose">Close</button></div></div></div>
     <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
@@ -184,8 +185,16 @@ body.over .dg polygon.on{fill:var(--bad)}
   </section>
 </aside>
 <audio id="au"></audio>
-<script src="leaflet.js"></script>
-<script src="leaflet-rotate.js"></script>
+<script>
+function loadJS(list,done){var i=0;(function next(){if(i>=list.length)return done(false);var s=document.createElement('script');s.src=list[i++];s.onload=function(){done(true)};s.onerror=next;document.head.appendChild(s)})()}
+window.mapReady=false;
+window.mapLibs=new Promise(function(res){
+  loadJS(['leaflet.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'],function(ok){
+    if(!ok){window.mapReady=true;return res(false)}
+    loadJS(['leaflet-rotate.js','https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate.js'],function(){window.mapReady=true;res(true)});
+  });
+});
+</script>
 <script>
 const $=s=>document.querySelector(s),ls=localStorage;
 const S={unit:ls.bd_unit||'kmh',theme:ls.bd_tm||'auto',veh:ls.bd_veh||'bike',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
@@ -314,20 +323,25 @@ const M={mode:ls.bd_mm||'head',userRot:false,h:0,hk:false,target:0,lz:0,prog:fal
 const P={dest:null,routes:[],sel:0};
 const norm=a=>((a%360)+360)%360,toTheta=h=>norm(360-h); // heading H pointing up == plugin bearing 360-H
 const setFollow=b=>{S.follow=b;$('#follow').textContent=b?'Following':'Re-centre';if(map)map.options.touchZoom=b?'center':true};
-function compassUpdate(){const b=map?map.getBearing():0,c=$('#compass');c.hidden=b<1||b>359;c.firstElementChild.style.transform=`rotate(${b}deg)`}
-function setB(theta){if(!map)return;M.prog=true;map.setBearing(norm(theta));M.prog=false;compassUpdate()}
-function stepB(){rafB=0;if(!map)return;const cur=map.getBearing(),d=((M.target-cur)%360+540)%360-180;if(Math.abs(d)<.4){setB(M.target);return}setB(cur+d*.18);rafB=requestAnimationFrame(stepB)}
+function compassUpdate(){const b=map&&map.getBearing?map.getBearing():0,c=$('#compass');c.hidden=b<1||b>359;c.firstElementChild.style.transform=`rotate(${b}deg)`}
+function setB(theta){if(!map||!map.setBearing)return;M.prog=true;map.setBearing(norm(theta));M.prog=false;compassUpdate()}
+function stepB(){rafB=0;if(!map||!map.getBearing)return;const cur=map.getBearing(),d=((M.target-cur)%360+540)%360-180;if(Math.abs(d)<.4){setB(M.target);return}setB(cur+d*.18);rafB=requestAnimationFrame(stepB)}
 function turnTo(t){M.target=norm(t);if(!rafB)rafB=requestAnimationFrame(stepB)} // eased rotation
-function arrowRot(){if(!me)return;me.setRotation(M.h*Math.PI/180);const e=me.getElement();if(e)e.classList.toggle('nohead',!M.hk)}
+function arrowRot(){if(!me)return;if(me.setRotation)me.setRotation(M.h*Math.PI/180);const e=me.getElement();if(e)e.classList.toggle('nohead',!M.hk)}
 function centerOn(p,animate){ // keep the rider in the lower part of the screen, whatever the rotation
   const z=map.getSize(),P0=map.latLngToContainerPoint(p),D=L.point(z.x/2,z.y/2+z.y*.18),C=map.containerPointToLatLng(L.point(z.x/2,z.y/2).add(P0.subtract(D)));
   animate?map.panTo(C,{animate:true,duration:.9,easeLinearity:1}):map.setView(C,map.getZoom(),{animate:false});
 }
+function mapMsg(t){const e=$('#mapmsg');e.hidden=!t;e.textContent=t||''}
 function initMap(){
-  if(map||!window.L)return;
+  if(map)return;
+  if(!window.mapReady){mapMsg('Loading map…');window.mapLibs.then(()=>{initMap();if(map){map.invalidateSize();mapFollowNow()}});return}
+  if(!window.L){mapMsg('Map files could not be loaded. Make sure leaflet.js, leaflet.css and leaflet-rotate.js are uploaded next to index.html, then reopen the app.');return}
+  mapMsg('');
   const p=S.pos?[S.pos.latitude,S.pos.longitude]:[15.49,73.83];
   map=L.map('map',{rotate:true,bearing:0,touchRotate:true,rotateControl:false,zoomControl:false,attributionControl:false,touchZoom:true,doubleClickZoom:false}).setView(p,16);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:false}).addTo(map);
+  const tl=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:false}).addTo(map);
+  let tOk=0,tBad=0;tl.on('tileload',()=>{tOk++;mapMsg('')});tl.on('tileerror',()=>{tBad++;if(!tOk&&tBad>=4)mapMsg('Map tiles are not loading. Check your internet connection.')});
   acc=L.circle(p,{radius:0,stroke:false,fillColor:'#1a73e8',fillOpacity:.14,interactive:false}).addTo(map);
   me=L.marker(p,{rotateWithView:true,rotation:0,icon:L.divIcon({className:'me',iconSize:[60,60],iconAnchor:[30,30],html:'<svg viewBox="0 0 60 60" width="60" height="60"><path d="M30 30 18 4A30 30 0 0 1 42 4Z" fill="#1a73e8" fill-opacity=".35"/><circle cx="30" cy="30" r="10" fill="#1a73e8" stroke="#fff" stroke-width="3.5"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
   map.on('dragstart',()=>setFollow(false));
