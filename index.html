@@ -75,6 +75,11 @@ body.over{box-shadow:inset 0 0 0 .45rem var(--bad)}body.over .sign{background:va
 #plist{flex:1;min-height:3rem;overflow:auto;border-top:1px solid var(--line)}
 #plist div{padding:.55rem .3rem;font-size:1.2rem;border-bottom:1px solid var(--line)}#plist div.cur{color:var(--acc)}
 .note{color:var(--dim);font-size:1rem;line-height:1.2}
+button svg{display:block;margin:auto;width:1em;height:1em}
+#mini button{font-size:1.7rem;padding:.35rem .7rem;line-height:0}
+#vol{flex:1;min-width:0;accent-color:var(--acc);height:2rem;border:0;padding:0}
+#vv{min-width:2.6rem;text-align:right;font-size:1.1rem;color:var(--dim)}
+#qx{font-size:1.6rem;line-height:1;padding:.3rem .8rem}
 /* landscape phones: nav rail on the left, two-column ride screen */
 @media (orientation:landscape) and (max-height:560px){
   body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
@@ -102,11 +107,11 @@ body.over{box-shadow:inset 0 0 0 .45rem var(--bad)}body.over .sign{background:va
       <div><b id="dist">0.0</b><small id="dlab">km</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>max</small></div>
       <div><b id="time">0:00</b><small>riding</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
     </div>
-    <div id="mini"><span id="mTitle">Music off</span><button id="mPlay">⏯</button><button id="mNext">⏭</button></div>
+    <div id="mini"><span id="mTitle">Music off</span><button id="mPrev" aria-label="Previous"></button><button id="mPlay" aria-label="Play or pause"></button><button id="mNext" aria-label="Next"></button></div>
     <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button><button id="reset">Reset</button></div>
   </section>
   <section id="mapv" class="view">
-    <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="go" style="flex:0">Go</button></div>
+    <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
     <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><div id="attr">© OpenStreetMap</div></div>
     <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
@@ -119,7 +124,8 @@ body.over{box-shadow:inset 0 0 0 .45rem var(--bad)}body.over .sign{background:va
     <div id="p_file" hidden class="row" style="flex:none"><button id="add">Add songs from phone</button><input id="files" type="file" accept="audio/*" multiple hidden></div>
     <div><div id="title">Nothing playing</div><div id="sub">Pick a source above</div></div>
     <input id="seek" type="range" min="0" max="100" value="0" hidden>
-    <div class="row ctl"><button id="prev">⏮</button><button id="play">▶</button><button id="next">⏭</button></div>
+    <div class="row ctl"><button id="prev" aria-label="Previous"></button><button id="play" aria-label="Play or pause"></button><button id="next" aria-label="Next"></button></div>
+    <div class="row" style="align-items:center;flex:none"><button id="vDn" style="flex:0" aria-label="Volume down">−</button><input id="vol" type="range" min="0" max="100" value="100" aria-label="Volume"><button id="vUp" style="flex:0" aria-label="Volume up">+</button><span id="vv" style="flex:0">100</span></div>
     <div id="plist"></div>
     <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
   </section>
@@ -258,6 +264,9 @@ $('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;pr
 /* ---------- search + navigation (free: OpenStreetMap Nominatim + OSRM) ---------- */
 const msg=t=>$('#res').innerHTML=`<div>${t}</div>`;
 $('#q').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+const qSync=()=>{$('#qx').hidden=!$('#q').value};
+$('#q').oninput=()=>{$('#res').innerHTML='';qSync()};
+$('#qx').onclick=()=>{$('#q').value='';$('#res').innerHTML='';qSync();$('#q').focus()};
 $('#go').onclick=async()=>{
   const q=$('#q').value.trim();if(!q)return;msg('Searching…');
   const b=S.pos?`&viewbox=${S.pos.longitude-.6},${S.pos.latitude+.6},${S.pos.longitude+.6},${S.pos.latitude-.6}`:'';
@@ -277,7 +286,7 @@ function instr(s){
   const txt=t==='fork'?'Keep '+d.replace('slight ',''):d==='straight'?'Continue straight':d==='uturn'?'Make a U-turn':/slight/.test(d)?'Bear '+d.replace('slight ',''):'Turn '+d;
   return{ar:AR[d]||'⬆',txt};
 }
-const duck=v=>{au.volume=v;try{yt&&yt.setVolume&&yt.setVolume(v*100)}catch(e){}};
+const duck=f=>{au.volume=VOL*f;try{yt&&yt.setVolume&&yt.setVolume(VOL*f*100)}catch(e){}};
 const sayf=t=>{if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);u.onstart=()=>duck(.25);u.onend=u.onerror=()=>duck(1);speechSynthesis.speak(u)};
 const say=t=>N.voice&&sayf(t);
 async function route(lat,lon,quiet){
@@ -320,6 +329,13 @@ $('#nVoice').onclick=()=>{N.voice=!N.voice;$('#nVoice').textContent=N.voice?'�
 
 /* ---------- music: radio (free), YouTube (free, with ads), local files ---------- */
 const au=$('#au'),Q={radio:[],file:[]},I={radio:-1,file:-1};let mode='radio',yt;
+const IC=d=>`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${d}"/></svg>`;
+const I_PLAY=IC('M8 5v14l11-7z'),I_PAUSE=IC('M6 5h4v14H6zM14 5h4v14h-4z'),I_NEXT=IC('M6 6v12l8.5-6zM16 6h2v12h-2z'),I_PREV=IC('M18 6v12l-8.5-6zM6 6h2v12H6z');
+function setPlay(on){$('#play').innerHTML=$('#mPlay').innerHTML=on?I_PAUSE:I_PLAY}
+$('#prev').innerHTML=$('#mPrev').innerHTML=I_PREV;$('#next').innerHTML=$('#mNext').innerHTML=I_NEXT;setPlay(0);
+let VOL=ls.bd_vol==null?1:+ls.bd_vol;
+function setVol(v){VOL=Math.max(0,Math.min(1,Math.round(v*100)/100));ls.bd_vol=VOL;au.volume=VOL;try{yt&&yt.setVolume&&yt.setVolume(VOL*100)}catch(e){}$('#vol').value=VOL*100;$('#vv').textContent=Math.round(VOL*100)}
+$('#vol').oninput=e=>setVol(e.target.value/100);$('#vDn').onclick=()=>setVol(VOL-.1);$('#vUp').onclick=()=>setVol(VOL+.1);setVol(VOL);
 function setTitle(a,b){$('#title').textContent=a;$('#sub').textContent=b||'';$('#mTitle').textContent=a}
 function draw(){const q=Q[mode]||[];$('#plist').innerHTML='';q.forEach((t,i)=>{const d=document.createElement('div');d.textContent=t.name;if(i===I[mode])d.className='cur';d.onclick=()=>playAt(i);$('#plist').append(d)})}
 function playAt(i){
@@ -329,7 +345,7 @@ function playAt(i){
   if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:t.sub||'Handlebar Dash'});
 }
 function setMode(m){
-  au.pause();yt&&yt.pauseVideo&&yt.pauseVideo();mode=m;$('#play').textContent='▶';
+  au.pause();yt&&yt.pauseVideo&&yt.pauseVideo();mode=m;setPlay(0);
   document.querySelectorAll('.src').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
   ['radio','yt','file'].forEach(x=>$('#p_'+x).hidden=x!==m);$('#seek').hidden=m!=='file';draw();
 }
@@ -340,8 +356,8 @@ function toggle(){
   au.paused?au.play():au.pause();
 }
 const step=d=>mode==='yt'?yt&&(d>0?yt.nextVideo():yt.previousVideo()):playAt((I[mode]<0?0:I[mode])+d);
-$('#play').onclick=$('#mPlay').onclick=toggle;$('#next').onclick=$('#mNext').onclick=()=>step(1);$('#prev').onclick=()=>step(-1);
-au.onplay=()=>$('#play').textContent='⏸';au.onpause=()=>$('#play').textContent='▶';au.onended=()=>mode==='file'&&step(1);
+$('#play').onclick=$('#mPlay').onclick=toggle;$('#next').onclick=$('#mNext').onclick=()=>step(1);$('#prev').onclick=$('#mPrev').onclick=()=>step(-1);
+au.onplay=()=>setPlay(1);au.onpause=()=>setPlay(0);au.onended=()=>mode==='file'&&step(1);
 au.ontimeupdate=()=>{if(au.duration&&mode==='file')$('#seek').value=au.currentTime/au.duration*100};
 $('#seek').oninput=e=>{if(au.duration)au.currentTime=e.target.value/100*au.duration};
 if('mediaSession' in navigator){const m=navigator.mediaSession;m.setActionHandler('play',()=>toggle());m.setActionHandler('pause',()=>toggle());m.setActionHandler('nexttrack',()=>step(1));m.setActionHandler('previoustrack',()=>step(-1))}
@@ -365,7 +381,7 @@ function ytLoad(url){
   const go=()=>{
     if(yt)return l?yt.loadPlaylist({listType:'playlist',list:l}):yt.loadVideoById(v);
     yt=new YT.Player('ytp',{width:'100%',height:'100%',videoId:l?undefined:v,playerVars:Object.assign({playsinline:1,autoplay:1},l?{listType:'playlist',list:l}:{}),
-      events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{$('#play').textContent=e.data===1?'⏸':'▶';const d=yt.getVideoData&&yt.getVideoData();if(d&&d.title)setTitle(d.title,d.author)}}});
+      events:{onReady:e=>{e.target.setVolume(VOL*100);e.target.playVideo()},onStateChange:e=>{setPlay(e.data===1);const d=yt.getVideoData&&yt.getVideoData();if(d&&d.title)setTitle(d.title,d.author)}}});
   };
   if(window.YT&&YT.Player)return go();
   window.onYouTubeIframeAPIReady=go;
@@ -379,7 +395,7 @@ $('#spot').onclick=()=>location.href='intent://#Intent;package=com.spotify.music
 $('#ytm').onclick=()=>location.href='intent://#Intent;package=com.google.android.apps.youtube.music;end';
 /* ---------- safety: speed limits, alerts, crash detection ---------- */
 let spd=0,ac,imp=0,sosT=null;
-const A={on:ls.bd_al!=='0',est:ls.bd_est==='1',tol:ls.bd_tol==null?5:+ls.bd_tol,crash:ls.bd_cr!=='0',last:0,vt:0,lb:S.mov,bw:0,ec:ls.bd_ec||''};
+const A={on:ls.bd_al!=='0',est:ls.bd_est==='1',tol:Math.min(5,ls.bd_tol==null?5:+ls.bd_tol),crash:ls.bd_cr!=='0',last:0,vt:0,lb:S.mov,bw:0,ec:ls.bd_ec||''};
 const L_={ways:[],cx:null,t:0,cur:null,road:''};
 const EST={motorway:80,trunk:70,primary:60,secondary:50,tertiary:40,unclassified:40,residential:30,living_street:20,service:20};
 const parseMax=v=>{const m=String(v||'').match(/^(\d+)\s*(mph)?/);return m?Math.round(+m[1]*(m[2]?1.609:1)):0};
@@ -436,13 +452,13 @@ $('#sosSend').onclick=$('#sosMsg').onclick=()=>sms('SOS! I may have had an accid
 $('#shareLoc').onclick=()=>navigator.share?navigator.share({title:'My location',text:'I am here: '+where()}).catch(()=>{}):sms('I am here:');
 $('#sosCall').onclick=$('#call').onclick=()=>location.href='tel:112';
 /* safety settings */
-const TOL=[0,5,10];
+const TOL=[0,5];
 function paintSafety(){
   $('#sAl').textContent='Speed alerts: '+(A.on?'On':'Off');$('#sTol').textContent='Allow +'+A.tol+' km/h';
   $('#sEst').textContent='Estimated limits: '+(A.est?'alert':'show only');$('#sCr').textContent='Crash detection: '+(A.crash?'On':'Off');
 }
 $('#sAl').onclick=()=>{A.on=!A.on;ls.bd_al=A.on?1:0;paintSafety()};
-$('#sTol').onclick=()=>{A.tol=TOL[(TOL.indexOf(A.tol)+1)%3];ls.bd_tol=A.tol;paintSafety()};
+$('#sTol').onclick=()=>{A.tol=TOL[(TOL.indexOf(A.tol)+1)%TOL.length];ls.bd_tol=A.tol;paintSafety()};
 $('#sEst').onclick=()=>{A.est=!A.est;ls.bd_est=A.est?1:0;paintSafety()};
 $('#sCr').onclick=()=>{A.crash=!A.crash;ls.bd_cr=A.crash?1:0;paintSafety()};
 $('#sTest').onclick=sosStart;$('#ec').value=A.ec;$('#ec').oninput=e=>{A.ec=e.target.value.trim();ls.bd_ec=A.ec};paintSafety();
