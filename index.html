@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <title>Handlebar Dash</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="stylesheet" href="leaflet.css">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#111315;--fg:#eef0ea;--dim:#8d9490;--acc:#ffb81c;--line:#2a2e31;--ok:#5fd38d;--bad:#ff5d4d}
@@ -53,7 +53,7 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 #res{max-height:28%;overflow:auto}#res div{padding:.55rem .3rem;font-size:1.15rem;border-bottom:1px solid var(--line)}
 #q,#yturl{flex:1;min-width:0}
 #mapw{flex:1;position:relative;overflow:hidden;border-radius:.7rem;min-height:8rem}
-#map{position:absolute;left:0;top:0;width:100%;height:100%;transition:transform .8s linear;will-change:transform}
+#map{position:absolute;inset:0}
 #mhud{position:absolute;z-index:1000;top:.5rem;left:.5rem;right:.5rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
 #mhud .sign{pointer-events:auto}
 #mSpeed{display:flex;gap:.25rem;height:2.8rem;background:var(--bg);padding:.3rem .6rem;border-radius:.6rem}
@@ -105,6 +105,10 @@ body.over .dg polygon.on{fill:var(--bad)}
 .sh{display:flex;gap:.5rem;padding:.5rem 1rem;border-bottom:1px solid var(--line)}.sh .sb{flex:1}.sh #sclose{flex:0;font-size:1.6rem;line-height:1;padding:.3rem .8rem}
 .pane{display:none;flex:1;min-height:0;overflow:auto;flex-direction:column;gap:.5rem;padding:.6rem 1rem}.pane.on{display:flex}
 .day{display:flex;justify-content:space-between;align-items:center;gap:.5rem;color:var(--dim);font-size:1.05rem;margin-top:.6rem}.day b{color:var(--fg);font-size:1.2rem}.day span{margin-left:auto}.day button{padding:.15rem .6rem;font-size:1rem}
+#compass{position:absolute;z-index:1000;top:4.6rem;left:.5rem;width:2.8rem;height:2.8rem;padding:0;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#compass svg{width:1.6rem;height:1.6rem}
+.me.nohead path{display:none}
+.vrow{display:flex;gap:.5rem;align-items:center;padding:.4rem 1rem;border-bottom:1px solid var(--line)}.vrow span{color:var(--dim)}.vrow .vb{flex:1}
 /* landscape phones: nav rail on the left, two-column ride screen */
 @media (orientation:landscape) and (max-height:560px){
   body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
@@ -137,7 +141,7 @@ body.over .dg polygon.on{fill:var(--bad)}
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
-    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><div id="attr">© OpenStreetMap</div><div id="rcard" hidden><div id="rtitle"></div><div id="rsub"></div><div id="rchips"></div><div class="row"><button id="rstart">Start</button><button id="rsave">Save</button><button id="rclose">Close</button></div></div></div>
+    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><button id="compass" hidden aria-label="Reset to north"><svg viewBox="0 0 24 24"><path d="M12 2 17 13H7z" fill="#d93025"/><path d="M12 22 7 13h10z" fill="currentColor" opacity=".55"/></svg></button><div id="attr">© OpenStreetMap</div><div id="rcard" hidden><div id="rtitle"></div><div id="rsub"></div><div id="rchips"></div><div class="row"><button id="rstart">Start</button><button id="rsave">Save</button><button id="rclose">Close</button></div></div></div>
     <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
@@ -158,6 +162,7 @@ body.over .dg polygon.on{fill:var(--bad)}
 <div id="sos" hidden><h1>Crash detected</h1><div id="sosT">30</div><button id="sosOk">I'm OK</button><button id="sosSend" hidden>Send SOS message</button><button id="sosCall">Call 112</button></div>
 <div id="scrim" hidden></div>
 <aside id="side" aria-label="Menu"><div class="sh"><button class="sb on" data-p="trips">Timeline</button><button class="sb" data-p="safety">Safety</button><button id="sclose" aria-label="Close">×</button></div>
+  <div class="vrow"><span>Vehicle</span><button class="vb" data-v="car">Car</button><button class="vb" data-v="bike">Bike</button><button class="vb" data-v="cycle">Cycle</button></div>
   <section id="trips" class="pane on">
     <div class="grid"><div><b id="tD">0</b><small id="tDL">km today</small></div><div><b id="tT">0:00</b><small>riding today</small></div><div><b id="tM">0</b><small id="tML">top km/h</small></div></div>
     <div id="tweek"></div>
@@ -179,10 +184,11 @@ body.over .dg polygon.on{fill:var(--bad)}
   </section>
 </aside>
 <audio id="au"></audio>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="leaflet.js"></script>
+<script src="leaflet-rotate.js"></script>
 <script>
 const $=s=>document.querySelector(s),ls=localStorage;
-const S={unit:ls.bd_unit||'kmh',theme:ls.bd_tm||'auto',prof:ls.bd_prof||'car',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
+const S={unit:ls.bd_unit||'kmh',theme:ls.bd_tm||'auto',veh:ls.bd_veh||'bike',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
 const N={on:false,steps:[],si:1,pi:1,dn:999,pts:[],dest:null,off:0,rr:0,said:{},voice:true,v:8};
 const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
 const mult=()=>S.unit==='kmh'?3.6:2.23694,dmul=()=>S.unit==='kmh'?.001:.000621371;
@@ -234,7 +240,7 @@ let musicInit=false;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button,.view').forEach(e=>e.classList.remove('on'));
   b.classList.add('on');$('#'+b.dataset.v).classList.add('on');
-  if(b.dataset.v==='mapv'){initMap();setTimeout(()=>{sizeMap();mapFollowNow()},50)}
+  if(b.dataset.v==='mapv'){initMap();setTimeout(()=>{map&&map.invalidateSize();mapFollowNow()},50)}
   if(b.dataset.v==='trips')renderTrips();
   if(b.dataset.v==='music'&&!musicInit){musicInit=true;if(!Q.radio.length)radio('tag=lofi')}
 });
@@ -245,29 +251,47 @@ $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():docu
 if(matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches)$('#full').hidden=true; // already full screen when installed
 
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
-addEventListener('resize',()=>{sizeMap();mapFollowNow()});
+addEventListener('resize',()=>{map&&map.invalidateSize();mapFollowNow()});
 applyTheme();render(0);
 
 /* ---------- GPS ---------- */
+const G={mv:false,up:0,dn:0,sv:0,pt:null,anchor:null,lastT:0,alt:null,buf:[]};
+const plain=c=>({latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,altitude:c.altitude,heading:c.heading,speed:c.speed});
 function onPos(p){
-  const c=p.coords,t=p.timestamp;S.pos=c;
-  $('#gps').className=c.accuracy<=30?'ok':'';$('#acc').textContent='±'+Math.round(c.accuracy)+'m';
-  let v=c.speed,d=0,dt=0;
-  if(S.last){d=hav(S.last.latitude,S.last.longitude,c.latitude,c.longitude);dt=Math.min((t-S.lastT)/1000,10)}
-  if(v==null)v=dt>0?d/dt:0;
-  if(v<.8||c.accuracy>50)v=0;
-  if(c.accuracy<=50){
-    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);if(T.cur){T.cur.dist+=d;T.cur.mov+=dt;T.cur.max=Math.max(T.cur.max,v)}}
-    S.last=c;S.lastT=t;
+  const raw=p.coords,t=p.timestamp;
+  if(t<=G.lastT)return; // duplicate or out-of-order fix
+  const dt=G.lastT?Math.min((t-G.lastT)/1000,5):1;G.lastT=t;
+  const good=raw.accuracy<=35,hasS=raw.speed!=null&&!isNaN(raw.speed);
+  $('#gps').className=raw.accuracy<=30?'ok':'';$('#acc').textContent='±'+Math.round(raw.accuracy)+'m';
+  // 1. speed: the receiver's Doppler speed is far steadier than position changes; position-based speed only counts if the jump is bigger than the noise
+  let v=0;
+  if(!good)v=G.sv;
+  else if(hasS)v=raw.speed;
+  else{ // no receiver speed: compare the average of the last 6 fixes with the 6 before, so random jitter cancels out
+    G.buf.push([raw.latitude,raw.longitude,t]);if(G.buf.length>12)G.buf.shift();
+    if(G.buf.length===12){const av=a=>a.reduce((x,q)=>[x[0]+q[0]/6,x[1]+q[1]/6,x[2]+q[2]/6],[0,0,0]),a=av(G.buf.slice(0,6)),b=av(G.buf.slice(6)),d=hav(a[0],a[1],b[0],b[1]),tt=(b[2]-a[2])/1000;if(tt>0&&d>Math.max(15,raw.accuracy*2))v=d/tt}
   }
-  S.v=v;render(v);
-  if(c.heading!=null&&!isNaN(c.heading)&&v>0)$('#hdg').textContent=card(c.heading);
-  if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
-  if(c.heading!=null&&!isNaN(c.heading)&&v>1.5)M.h=c.heading;
+  if(v>70)v=G.sv;
+  G.sv=G.sv*.5+v*.5;const sm=G.sv;
+  // 2. moving/stopped with hysteresis: start needs 2 fixes in a row above 6.5 km/h, stop needs 3 fixes below 2.5 km/h
+  if(!G.mv){G.up=(good&&v>=1.8)?G.up+1:0;if(G.up>=2){G.mv=true;G.dn=0}}
+  else{G.dn=sm<.7?G.dn+1:0;if(G.dn>=3){G.mv=false;G.up=0;G.anchor=plain(G.pt||raw)}}
+  // 3. distance only accumulates while moving, integrated from receiver speed (immune to position jitter)
+  let inc=0;
+  if(G.mv&&good&&G.pt)inc=hasS?Math.min(raw.speed,70)*dt:hav(G.pt.latitude,G.pt.longitude,raw.latitude,raw.longitude);
+  if(good)G.pt=raw;
+  if(G.mv&&inc>0){S.dist+=inc;S.mov+=dt;S.max=Math.max(S.max,sm);if(T.cur){T.cur.dist+=inc;T.cur.mov+=dt;T.cur.max=Math.max(T.cur.max,sm)}}
+  // 4. position: frozen at an anchor while parked, so the dot, limits and trips don't wander
+  if(G.mv)S.pos=plain(raw);
+  else{if(!G.anchor||(good&&raw.accuracy<G.anchor.accuracy*.7))G.anchor=plain(raw);S.pos=Object.assign({},G.anchor,{accuracy:raw.accuracy})}
+  if(G.mv&&sm>1.5&&raw.heading!=null&&!isNaN(raw.heading)){M.h=raw.heading;M.hk=true}
+  if(raw.altitude!=null&&good){G.alt=G.alt==null?raw.altitude:G.alt*.9+raw.altitude*.1;$('#alt').textContent=Math.round(G.alt)}
+  const v2=G.mv?sm:0;
+  S.v=v2;render(v2);
   if(!S.sunOk){S.sunOk=1;applyTheme()}
-  spd=v;if(map&&$('#mapv').classList.contains('on'))mapTick(c,v);
-  limitTick(c);alertTick(v);breakTick();tripTick(c,v);
-  navTick(c);save();weather();
+  spd=v2;if(map&&$('#mapv').classList.contains('on'))mapTick(S.pos,v2);
+  limitTick(S.pos);alertTick(v2);breakTick();tripTick(S.pos,v2);
+  navTick(S.pos);save();weather();
 }
 const onErr=e=>{$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'};
 if('geolocation' in navigator)navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
@@ -285,54 +309,59 @@ let wxT=0;function weather(){
 }
 
 /* ---------- map ---------- */
-let map,me,acc,dmk,arrowEl,tripL,RL=[];
-const M={mode:ls.bd_mm||'head',rot:0,h:0,lz:0,restore:false};
+let map,me,acc,dmk,tripL,RL=[],rafB=0;
+const M={mode:ls.bd_mm||'head',userRot:false,h:0,hk:false,target:0,lz:0,prog:false};
 const P={dest:null,routes:[],sel:0};
-function sizeMap(){
-  const W=$('#mapw').clientWidth,H=$('#mapw').clientHeight,el=$('#map');if(!W)return;
-  if(M.mode==='head'){const o=H*.22,d=Math.ceil(Math.hypot(W,H+2*o));Object.assign(el.style,{width:d+'px',height:d+'px',left:(W-d)/2+'px',top:(H-d)/2+o+'px'})}
-  else Object.assign(el.style,{width:'100%',height:'100%',left:'0',top:'0',transform:'none'});
-  map&&map.invalidateSize({animate:false});
+const norm=a=>((a%360)+360)%360,toTheta=h=>norm(360-h); // heading H pointing up == plugin bearing 360-H
+const setFollow=b=>{S.follow=b;$('#follow').textContent=b?'Following':'Re-centre';if(map)map.options.touchZoom=b?'center':true};
+function compassUpdate(){const b=map?map.getBearing():0,c=$('#compass');c.hidden=b<1||b>359;c.firstElementChild.style.transform=`rotate(${b}deg)`}
+function setB(theta){if(!map)return;M.prog=true;map.setBearing(norm(theta));M.prog=false;compassUpdate()}
+function stepB(){rafB=0;if(!map)return;const cur=map.getBearing(),d=((M.target-cur)%360+540)%360-180;if(Math.abs(d)<.4){setB(M.target);return}setB(cur+d*.18);rafB=requestAnimationFrame(stepB)}
+function turnTo(t){M.target=norm(t);if(!rafB)rafB=requestAnimationFrame(stepB)} // eased rotation
+function arrowRot(){if(!me)return;me.setRotation(M.h*Math.PI/180);const e=me.getElement();if(e)e.classList.toggle('nohead',!M.hk)}
+function centerOn(p,animate){ // keep the rider in the lower part of the screen, whatever the rotation
+  const z=map.getSize(),P0=map.latLngToContainerPoint(p),D=L.point(z.x/2,z.y/2+z.y*.18),C=map.containerPointToLatLng(L.point(z.x/2,z.y/2).add(P0.subtract(D)));
+  animate?map.panTo(C,{animate:true,duration:.9,easeLinearity:1}):map.setView(C,map.getZoom(),{animate:false});
 }
-function setRot(h){
-  const el=$('#map');if(M.mode!=='head'){el.style.transform='none';return}
-  M.rot+=((h-M.rot)%360+540)%360-180;el.style.transform=`rotate(${-M.rot}deg)`;
-}
-const setDrag=()=>{if(map)M.mode==='head'?map.dragging.disable():map.dragging.enable()};
 function initMap(){
   if(map||!window.L)return;
-  sizeMap();
   const p=S.pos?[S.pos.latitude,S.pos.longitude]:[15.49,73.83];
-  map=L.map('map',{zoomControl:false,attributionControl:false,touchZoom:'center',doubleClickZoom:false}).setView(p,16);
+  map=L.map('map',{rotate:true,bearing:0,touchRotate:true,rotateControl:false,zoomControl:false,attributionControl:false,touchZoom:true,doubleClickZoom:false}).setView(p,16);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:false}).addTo(map);
   acc=L.circle(p,{radius:0,stroke:false,fillColor:'#1a73e8',fillOpacity:.14,interactive:false}).addTo(map);
-  me=L.marker(p,{icon:L.divIcon({className:'',iconSize:[60,60],iconAnchor:[30,30],html:'<svg viewBox="0 0 60 60" width="60" height="60"><path d="M30 30 18 4A30 30 0 0 1 42 4Z" fill="#1a73e8" fill-opacity=".35"/><circle cx="30" cy="30" r="10" fill="#1a73e8" stroke="#fff" stroke-width="3.5"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
-  arrowEl=me.getElement().firstChild;
-  map.on('dragstart',()=>{S.follow=false;$('#follow').textContent='Re-centre'});
-  map.on('contextmenu',e=>{if(M.mode==='north')plan({name:'Dropped pin',sub:'',lat:e.latlng.lat,lon:e.latlng.lng})});
-  $('#mapw').addEventListener('touchstart',()=>M.lz=Date.now()+20000,{passive:true});
-  setDrag();
+  me=L.marker(p,{rotateWithView:true,rotation:0,icon:L.divIcon({className:'me',iconSize:[60,60],iconAnchor:[30,30],html:'<svg viewBox="0 0 60 60" width="60" height="60"><path d="M30 30 18 4A30 30 0 0 1 42 4Z" fill="#1a73e8" fill-opacity=".35"/><circle cx="30" cy="30" r="10" fill="#1a73e8" stroke="#fff" stroke-width="3.5"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
+  map.on('dragstart',()=>setFollow(false));
+  map.on('rotate',()=>{if(!M.prog){M.userRot=true;cancelAnimationFrame(rafB);rafB=0;compassUpdate()}}); // you twisted the map: stop auto-rotation
+  map.on('contextmenu',e=>plan({name:'Dropped pin',sub:'',lat:e.latlng.lat,lon:e.latlng.lng}));
+  $('#mapw').addEventListener('touchstart',()=>M.lz=Date.now()+20000,{passive:true}); // pause auto-zoom while you touch the map
+  setFollow(S.follow);arrowRot();
 }
-function mapFollowNow(){
+function mapFollowNow(soft){
   if(!map||!S.pos)return;const p=[S.pos.latitude,S.pos.longitude];
-  me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(S.pos.accuracy||0,150));
-  if(S.follow||M.mode==='head')map.setView(p,map.getZoom(),{animate:false});
-  setRot(M.h);if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;
+  me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(S.pos.accuracy||0,150));arrowRot();
+  if(!M.userRot){const t=M.mode==='head'&&M.hk?toTheta(M.h):0;soft?turnTo(t):setB(t)}
+  if(S.follow)centerOn(p,false);
 }
 function mapTick(c,v){ // only runs while the Map tab is visible
-  const p=[c.latitude,c.longitude];me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(c.accuracy||0,150));
-  if(v>1.5&&c.heading!=null&&!isNaN(c.heading)){if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;setRot(M.h)}
-  if(S.follow||M.mode==='head'){
-    map.panTo(p,{animate:true,duration:.9,easeLinearity:1});
-    const k=v*3.6;let z=k<15?17:k<40?16:k<70?15:14;if(N.on&&N.dn<150)z=17;
+  const p=[c.latitude,c.longitude];me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(c.accuracy||0,150));arrowRot();
+  if(G.mv&&v>2.5&&M.hk&&M.mode==='head'&&!M.userRot&&S.follow){const t=toTheta(M.h);if(Math.abs(((t-M.target)%360+540)%360-180)>4)turnTo(t)}
+  if(S.follow){
+    centerOn(p,true);
+    const k=v*3.6/(S.veh==='cycle'?.45:1);let z=k<15?17:k<40?16:k<70?15:k<100?14:13;if(N.on&&N.dn<150)z=17;
     if(z!==map.getZoom()&&Date.now()>M.lz){M.lz=Date.now()+6000;map.setZoom(z)}
   }
 }
 const modeLabel=()=>$('#mmode').textContent=M.mode==='head'?'Heading-up':'North-up';modeLabel();
-$('#mmode').onclick=()=>{M.mode=M.mode==='head'?'north':'head';ls.bd_mm=M.mode;modeLabel();S.follow=true;$('#follow').textContent='Following';sizeMap();setDrag();mapFollowNow()};
-$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';mapFollowNow()};
-const profLabel=()=>$('#prof').textContent=S.prof==='bike'?'Cycle':'Moto';profLabel();
-$('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;profLabel();if(N.on)reroute();else if(P.dest&&P.routes.length)plan(P.dest)};
+$('#mmode').onclick=()=>{M.mode=M.mode==='head'?'north':'head';ls.bd_mm=M.mode;modeLabel();M.userRot=false;setFollow(true);mapFollowNow(true)};
+$('#follow').onclick=()=>{M.userRot=false;setFollow(true);mapFollowNow(true)};
+$('#compass').onclick=()=>{M.mode='north';ls.bd_mm='north';modeLabel();M.userRot=false;turnTo(0)};
+/* vehicle: Car, Bike (motorbike/scooter), Cycle */
+const VEH={car:'Car',bike:'Bike',cycle:'Cycle'};if(!VEH[S.veh])S.veh='bike';
+function paintVeh(){$('#prof').textContent=VEH[S.veh];document.querySelectorAll('.vb').forEach(b=>b.classList.toggle('on',b.dataset.v===S.veh))}
+function setVeh(v){if(v===S.veh)return;S.veh=v;ls.bd_veh=v;paintVeh();if(T.cur)endTrip();if(N.on)reroute();else if(P.dest&&P.routes.length)plan(P.dest)}
+paintVeh();
+$('#prof').onclick=()=>setVeh({car:'bike',bike:'cycle',cycle:'car'}[S.veh]);
+document.querySelectorAll('.vb').forEach(b=>b.onclick=()=>setVeh(b.dataset.v));
 
 /* ---------- search + navigation (free: OpenStreetMap Nominatim + OSRM) ---------- */
 const msg=t=>$('#res').innerHTML=`<div>${t}</div>`;
@@ -385,7 +414,7 @@ const duck=f=>{au.volume=VOL*f;try{yt&&yt.setVolume&&yt.setVolume(VOL*f*100)}cat
 const sayf=t=>{if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);u.onstart=()=>duck(.25);u.onend=u.onerror=()=>duck(1);speechSynthesis.speak(u)};
 const say=t=>N.voice&&sayf(t);
 async function fetchRoutes(lat,lon){
-  const base=S.prof==='bike'?'routed-bike':'routed-car';
+  const base=S.veh==='cycle'?'routed-bike':'routed-car'; // OSRM has no motorbike profile, so Bike uses road routing like Car
   try{const j=await(await fetch(`https://routing.openstreetmap.de/${base}/route/v1/driving/${S.pos.longitude},${S.pos.latitude};${lon},${lat}?overview=full&geometries=geojson&steps=true&alternatives=true`)).json();
     return j.routes&&j.routes.length?j.routes.slice(0,3):null}catch(e){return null}
 }
@@ -414,9 +443,9 @@ async function plan(p){
   const rs=await fetchRoutes(p.lat,p.lon);
   if(!rs)return msg('Could not get a route. Check internet or try another place.');
   $('#res').innerHTML='';P.dest=p;P.routes=rs;P.sel=0;drawRoutes();showCard();
-  if(M.mode==='head'){M.restore=true;$('#mmode').click()}
-  sizeMap();map.fitBounds(L.latLngBounds(ll(rs[0])),{paddingTopLeft:[30,30],paddingBottomRight:[30,190]});
-  S.follow=false;$('#follow').textContent='Re-centre';
+  setB(0);M.userRot=true;
+  map.fitBounds(L.latLngBounds(ll(rs[0])),{paddingTopLeft:[30,30],paddingBottomRight:[30,190]});
+  setFollow(false);
 }
 function useRoute(r,d){
   N.steps=r.legs[0].steps;N.pts=ll(r);N.si=Math.min(1,N.steps.length-1);N.dest=[d.lat,d.lon];
@@ -424,8 +453,8 @@ function useRoute(r,d){
 }
 function startNav(){
   const r=P.routes[P.sel];useRoute(r,P.dest);P.routes=[r];P.sel=0;drawRoutes();$('#rcard').hidden=true;
-  if(M.restore){M.restore=false;$('#mmode').click()}
-  S.follow=true;$('#follow').textContent='Following';mapFollowNow();$('#q').value='';qSync();say('Starting navigation. '+fd(r.distance));
+  M.userRot=false;
+  setFollow(true);mapFollowNow();$('#q').value='';qSync();say('Starting navigation. '+fd(r.distance));
 }
 async function reroute(){
   const rs=await fetchRoutes(N.dest[0],N.dest[1]);if(!rs||!N.on)return;
@@ -434,8 +463,8 @@ async function reroute(){
 const clearTrip=()=>{if(tripL&&map)map.removeLayer(tripL);tripL=null};
 function closeCard(){
   clearTrip();if(!N.on)clearRoutes();$('#rcard').hidden=true;
-  if(M.restore){M.restore=false;$('#mmode').click()}
-  S.follow=true;$('#follow').textContent='Following';mapFollowNow();
+  M.userRot=false;
+  setFollow(true);mapFollowNow();
 }
 $('#rstart').onclick=startNav;$('#rclose').onclick=closeCard;
 $('#rsave').onclick=()=>{
@@ -449,7 +478,7 @@ function navTick(c){
   if(!N.on)return;
   const p=[c.latitude,c.longitude];const md=nearest(p);
   N.off=md>Math.max(60,(c.accuracy||0)*2)?N.off+1:0;
-  if(N.off>=4&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return reroute()}
+  if(N.off>=4&&G.mv&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return reroute()}
   const s=N.steps[N.si];if(!s)return;
   const d=hav(p[0],p[1],s.maneuver.location[1],s.maneuver.location[0]),fin=s.maneuver.type==='arrive';
   if(fin&&d<30){say('You have arrived');return endNav()}
@@ -567,7 +596,7 @@ function limitTick(c){
 const beep=(f=880,ms=250)=>{try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.2;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+ms/1000)}catch(e){}};
 function alertTick(v){
   const L=L_.cur,k=v*3.6;let over=false;
-  if(A.on&&L&&L.lim&&(L.src!=='est'||A.est)&&k>L.lim+A.tol)over=true;
+  if(A.on&&S.veh!=='cycle'&&L&&L.lim&&(L.src!=='est'||A.est)&&k>L.lim+A.tol)over=true; // speed-limit alerts are for motor vehicles
   document.body.classList.toggle('over',over);
   if(over&&Date.now()-A.last>(k>L.lim+A.tol+15?3000:8000)){
     A.last=Date.now();if(T.cur)T.cur.ov++;beep();navigator.vibrate&&navigator.vibrate([200,100,200]);
@@ -577,7 +606,7 @@ function alertTick(v){
 function breakTick(){if(S.mov-A.lb>7200){A.lb=S.mov;sayf('You have been riding for two hours. Take a break.')}}
 document.querySelectorAll('.sign').forEach(e=>e.onclick=()=>{const v=prompt('Set speed limit in km/h (leave blank for automatic)',ls.bd_man||'');if(v===null)return;if(+v>0)ls.bd_man=+v;else ls.removeItem('bd_man')});
 /* crash detection */
-addEventListener('devicemotion',e=>{const a=e.accelerationIncludingGravity;if(!a||!A.crash||sosT)return;if(Math.hypot(a.x,a.y,a.z)/9.81>6&&spd>4)imp=Date.now()});
+addEventListener('devicemotion',e=>{const a=e.accelerationIncludingGravity;if(!a||!A.crash||sosT)return;if(Math.hypot(a.x,a.y,a.z)/9.81>({car:8,bike:6,cycle:5}[S.veh]||6)&&spd>4)imp=Date.now()});
 setInterval(()=>{if(!imp||!A.crash||sosT)return;const dt=Date.now()-imp;if(dt>8000&&dt<30000&&spd<1){imp=0;sosStart()}else if(dt>=30000)imp=0},1000);
 function sosStart(){
   if(sosT)return;let n=30;$('#sos').hidden=false;$('#sosT').textContent=n;$('#sosSend').hidden=true;sayf("Crash detected. Tap I'm OK to cancel.");
@@ -604,12 +633,17 @@ $('#sTest').onclick=sosStart;$('#ec').value=A.ec;$('#ec').oninput=e=>{A.ec=e.tar
 /* ---------- storage: trips timeline, profile, backup (IndexedDB + localStorage) ---------- */
 const DB={db:null,
   open(){return new Promise(r=>{try{const q=indexedDB.open('bikedash',1);q.onupgradeneeded=()=>{q.result.createObjectStore('trips',{keyPath:'id'});q.result.createObjectStore('kv')};q.onsuccess=()=>{this.db=q.result;r(1)};q.onerror=()=>r(0)}catch(e){r(0)}})},
+  fb(op,st,a,b){ // if IndexedDB is unavailable, everything is kept in localStorage instead
+    const key='bd_db_'+st;let o={};try{o=JSON.parse(ls[key]||'{}')}catch(e){}
+    if(op==='get')return o[a]||null;if(op==='all')return Object.values(o);
+    if(op==='put')o[st==='trips'?a.id:b]=a;else if(op==='del')delete o[a];else if(op==='clear')o={};
+    try{ls[key]=JSON.stringify(o)}catch(e){}return null},
   tx(st,mode,fn){if(!this.db)return Promise.resolve(null);return new Promise(r=>{try{const t=this.db.transaction(st,mode),q=fn(t.objectStore(st));t.oncomplete=()=>r(q?q.result:null);t.onerror=t.onabort=()=>r(null)}catch(e){r(null)}})},
-  put(st,v,k){return this.tx(st,'readwrite',s=>k===undefined?s.put(v):s.put(v,k))},
-  get(st,k){return this.tx(st,'readonly',s=>s.get(k))},
-  all(st){return this.tx(st,'readonly',s=>s.getAll())},
-  del(st,k){return this.tx(st,'readwrite',s=>s.delete(k))},
-  clear(st){return this.tx(st,'readwrite',s=>s.clear())}};
+  put(st,v,k){return this.db?this.tx(st,'readwrite',s=>k===undefined?s.put(v):s.put(v,k)):Promise.resolve(this.fb('put',st,v,k))},
+  get(st,k){return this.db?this.tx(st,'readonly',s=>s.get(k)):Promise.resolve(this.fb('get',st,k))},
+  all(st){return this.db?this.tx(st,'readonly',s=>s.getAll()):Promise.resolve(this.fb('all',st))},
+  del(st,k){return this.db?this.tx(st,'readwrite',s=>s.delete(k)):Promise.resolve(this.fb('del',st,k))},
+  clear(st){return this.db?this.tx(st,'readwrite',s=>s.clear()):Promise.resolve(this.fb('clear',st))}};
 const T={cur:null,last:0,sv:0,ready:false};let TR=[];
 const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function place(lat,lon){
@@ -622,9 +656,9 @@ function dayCheck(){ // Ride-screen stats are for today and reset at midnight
 }
 dayCheck();
 function tripTick(c,v){ // a trip starts when you move and ends after 15 min stopped
-  if(!T.ready||v<2||c.accuracy>50)return;
+  if(!T.ready||!G.mv||c.accuracy>50)return;
   T.last=Date.now();
-  if(!T.cur){const tr=T.cur={id:Date.now(),start:Date.now(),pts:[],ov:0,dist:0,mov:0,max:0,sName:'',eName:''};place(c.latitude,c.longitude).then(n=>tr.sName=n)}
+  if(!T.cur){const tr=T.cur={id:Date.now(),start:Date.now(),pts:[],ov:0,dist:0,mov:0,max:0,veh:S.veh,sName:'',eName:''};place(c.latitude,c.longitude).then(n=>tr.sName=n)}
   const q=T.cur.pts,l=q[q.length-1];
   if(!l||hav(l[0],l[1],c.latitude,c.longitude)>=25)q.push([+c.latitude.toFixed(5),+c.longitude.toFixed(5),Math.round(v*3.6),Math.round((Date.now()-T.cur.start)/1000)]);
   if(Date.now()-T.sv>30000){T.sv=Date.now();DB.put('kv',T.cur,'cur')}
@@ -654,10 +688,10 @@ function showTrips(list,title,sub){
     if(!map)return;clearTrip();clearRoutes();
     const lines=list.filter(t=>t.pts.length>1).map(t=>L.polyline(t.pts.map(q=>[q[0],q[1]]),{color:'#ffb81c',weight:5,smoothFactor:2}));
     if(!lines.length)return;
-    if(M.mode==='head'){M.restore=true;$('#mmode').click()}
+    setB(0);M.userRot=true;
     tripL=L.featureGroup(lines).addTo(map);
-    sizeMap();map.fitBounds(tripL.getBounds(),{paddingTopLeft:[30,30],paddingBottomRight:[30,150]});
-    S.follow=false;$('#follow').textContent='Re-centre';
+    map.fitBounds(tripL.getBounds(),{paddingTopLeft:[30,30],paddingBottomRight:[30,150]});
+    setFollow(false);
     $('#rcard').hidden=false;$('#rtitle').textContent=title;$('#rsub').textContent=sub;$('#rchips').innerHTML='';$('#rstart').hidden=$('#rsave').hidden=true;
   },200);
 }
@@ -698,7 +732,7 @@ async function renderTrips(){
     el.append(h);
     list.forEach(t=>{
       const c=document.createElement('div');c.className='trip';
-      c.innerHTML=`<b>${tm(t.start)} – ${t.live?'now':tm(t.end)}</b><small>${esc(t.sName||'Start')} → ${t.live?'…':esc(t.eName||'End')}</small><small>${fd(t.dist)} · ${fmtT(t.mov)} riding · avg ${Math.round(t.avg*mult())} · max ${Math.round(t.max*mult())} ${S.unit==='kmh'?'km/h':'mph'}${t.ov?' · '+t.ov+' alerts':''}</small>`;
+      c.innerHTML=`<b>${tm(t.start)} – ${t.live?'now':tm(t.end)}</b><small>${VEH[t.veh]||'Bike'} · ${esc(t.sName||'Start')} → ${t.live?'…':esc(t.eName||'End')}</small><small>${fd(t.dist)} · ${fmtT(t.mov)} riding · avg ${Math.round(t.avg*mult())} · max ${Math.round(t.max*mult())} ${S.unit==='kmh'?'km/h':'mph'}${t.ov?' · '+t.ov+' alerts':''}</small>`;
       c.onclick=()=>toggleTrip(c,t);el.append(c);
     });
   });
@@ -712,7 +746,13 @@ $('#tClr').onclick=async()=>{
 DB.open().then(async()=>{
   const c=await DB.get('kv','cur');
   if(c&&c.pts){T.cur=Object.assign({dist:0,mov:0,max:0,ov:0},c);const l=c.pts[c.pts.length-1];T.last=c.start+(l?l[3]*1000:0)}
-  T.ready=true;dayCheck();if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
+  T.ready=true;dayCheck();
+  { // today's totals come from the saved timeline, so the Ride screen is right the moment the app opens
+    const today=new Date().toDateString();let d=0,m=0,x=0;
+    [...((await DB.all('trips'))||[]),...(T.cur?[T.cur]:[])].forEach(t=>{if(new Date(t.start).toDateString()===today){d+=t.dist||0;m+=t.mov||0;x=Math.max(x,t.max||0)}});
+    S.dist=Math.max(S.dist,d);S.mov=Math.max(S.mov,m);S.max=Math.max(S.max,x);save();render(S.v||0);
+  }
+  if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
 });
 async function storageInfo(){
   let t='Your rides and stats are saved automatically on this phone.';
@@ -740,7 +780,11 @@ $('#menu').onclick=()=>openSide();$('#sclose').onclick=$('#scrim').onclick=close
 document.querySelectorAll('.sb').forEach(b=>b.onclick=()=>openSide(b.dataset.p));
 setInterval(()=>{if($('#side').classList.contains('open')&&pane==='trips')renderTrips()},10000);
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+if('serviceWorker' in navigator){
+  const had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!G.mv)location.reload()}); // new version installed: reload when you're not riding
+}
 </script>
 </body>
 </html>
