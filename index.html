@@ -13,119 +13,139 @@
 :root{--bg:#111315;--fg:#eef0ea;--dim:#8d9490;--acc:#ffb81c;--line:#2a2e31;--ok:#5fd38d;--bad:#ff5d4d}
 [data-theme=day]{--bg:#f6f5ef;--fg:#101214;--dim:#5b615d;--acc:#b36b00;--line:#cfcdc2;--ok:#1a7f45;--bad:#c42b1c}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none}
+input{user-select:text}[hidden]{display:none!important}
+html{font-size:clamp(14px,1.2vmin + 9px,28px)}
 html,body{height:100%;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed','Arial Narrow',sans-serif-condensed,sans-serif;overflow:hidden}
-body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-button{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:700;font-size:20px}
+body{height:100dvh;display:grid;grid-template:"h" auto "b" auto "m" 1fr "n" auto/minmax(0,1fr);padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button,input{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:.6rem;padding:.5rem .8rem;font-weight:700;font-size:1.1rem}
 button:active{background:var(--line)}
-header{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;font-size:24px;font-weight:700;border-bottom:1px solid var(--line)}
-header span{display:flex;gap:6px;align-items:center}
-#gps{width:12px;height:12px;border-radius:50%;background:var(--bad)}
-#gps.ok{background:var(--ok)}
-main{flex:1;min-height:0;position:relative}
-.view{position:absolute;inset:0;display:none;padding:10px 16px;overflow:auto}
-.view.on{display:flex;flex-direction:column}
-nav{display:flex;border-top:1px solid var(--line)}
-nav button{flex:1;border:0;border-radius:0;padding:14px 0;font-size:24px;color:var(--dim)}
+button.on{border-color:var(--acc);color:var(--acc)}
+header{grid-area:h;display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.3rem 1rem;font-size:1.35rem;font-weight:700;border-bottom:1px solid var(--line)}
+header span{display:flex;gap:.4rem;align-items:center}
+#gps{width:.7rem;height:.7rem;border-radius:50%;background:var(--bad)}#gps.ok{background:var(--ok)}
+#navbar{grid-area:b;display:flex;align-items:center;gap:.8rem;padding:.4rem 1rem;background:var(--acc);color:#111}
+#navbar button{color:#111;border-color:#11111166}
+#nArrow{font-size:2.6rem;line-height:1}#nDist{font-size:2rem;font-weight:800;line-height:1}
+#nMid{flex:1;min-width:0;font-size:1.2rem;font-weight:700}#nTxt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{grid-area:m;min-height:0;position:relative}
+.view{position:absolute;inset:0;display:none;padding:.6rem 1rem;overflow:auto}
+.view.on{display:flex;flex-direction:column;gap:.5rem}
+#music:not(.on){display:flex;visibility:hidden;pointer-events:none}
+nav{grid-area:n;display:flex;border-top:1px solid var(--line)}
+nav button{flex:1;border:0;border-radius:0;padding:.7rem 0;font-size:1.4rem;color:var(--dim)}
 nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 /* ride */
-#speedbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
-#speed{font-size:min(44vw,48vh);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
-#unit{font-size:28px;color:var(--dim);font-weight:700;margin-top:6px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;border-top:1px solid var(--line);padding-top:8px}
-.grid div{text-align:center}
-.grid b{display:block;font-size:min(9vw,7vh);font-weight:700;font-variant-numeric:tabular-nums}
-.grid small{font-size:18px;color:var(--dim)}
-@media (orientation:landscape){
-  #ride.on{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
-  .grid{grid-template-columns:1fr 1fr;border-top:0;border-left:1px solid var(--line);padding:0 0 0 16px;align-content:center;gap:14px}
-  #speed{font-size:min(30vw,70vh)}
-}
+#ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto "k" auto/minmax(0,1fr)}
+#speedbox{grid-area:s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#speed{font-size:min(46vw,40dvh);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
+#unit{font-size:1.6rem;color:var(--dim);font-weight:700;margin-top:.3rem}
+.grid{grid-area:t;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;border-top:1px solid var(--line);padding-top:.4rem;text-align:center}
+.grid b{display:block;font-size:clamp(1.6rem,6vmin,3.4rem);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.grid small{font-size:1rem;color:var(--dim)}
+#mini{grid-area:m;display:flex;align-items:center;gap:.5rem;border-top:1px solid var(--line);padding-top:.4rem}
+#mTitle{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.2rem;color:var(--dim)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap}.row>*{flex:1}
+#ride .row{grid-area:k}
 /* map */
-#map{flex:1;border-radius:12px;min-height:200px}
+#mapv.on{padding:.5rem}
+#res{max-height:28%;overflow:auto}#res div{padding:.55rem .3rem;font-size:1.15rem;border-bottom:1px solid var(--line)}
+#q,#yturl{flex:1;min-width:0}
+#map{flex:1;border-radius:.7rem;min-height:8rem}
 [data-theme=night] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
-.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.row button{flex:1}
 /* music */
-#title{font-size:34px;font-weight:800;margin:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#sub{color:var(--dim);font-size:20px;margin-bottom:10px}
-#seek{width:100%;accent-color:var(--acc);height:34px}
-.ctl{display:flex;gap:10px;margin:10px 0}
-.ctl button{flex:1;font-size:36px;padding:14px 0}
-#plist{flex:1;overflow:auto;border-top:1px solid var(--line);margin-top:8px}
-#plist div{padding:10px 4px;font-size:22px;border-bottom:1px solid var(--line)}
-#plist div.cur{color:var(--acc)}
-.note{color:var(--dim);font-size:18px;margin-top:8px;line-height:1.2}
+#title{font-size:1.9rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sub{color:var(--dim);font-size:1.1rem}
+#seek{width:100%;accent-color:var(--acc);height:2rem}
+.ctl button{font-size:2rem;padding:.5rem 0}
+#ytw{aspect-ratio:16/9;max-height:30dvh;max-width:100%;background:#000;border-radius:.6rem;overflow:hidden;align-self:center;width:100%}
+#plist{flex:1;min-height:3rem;overflow:auto;border-top:1px solid var(--line)}
+#plist div{padding:.55rem .3rem;font-size:1.2rem;border-bottom:1px solid var(--line)}#plist div.cur{color:var(--acc)}
+.note{color:var(--dim);font-size:1rem;line-height:1.2}
+/* landscape phones: nav rail on the left, two-column ride screen */
+@media (orientation:landscape) and (max-height:560px){
+  body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
+  nav{flex-direction:column;border-top:0;border-right:1px solid var(--line)}
+  nav button{flex:1;padding:0 1rem;box-shadow:none!important;font-size:1.2rem}
+  #ride.on{grid-template:"s t" 1fr "s m" auto "s k" auto/1.3fr 1fr}
+  #speed{font-size:min(30vw,62dvh)}
+  .grid{border:0;align-content:center}
+  #plist{min-height:2rem}
+}
+@media (min-width:900px) and (orientation:portrait){.grid{grid-template-columns:repeat(6,1fr)}}
 </style>
 </head>
 <body data-theme="night">
-<header>
-  <span id="clock">--:--</span>
-  <span><i id="gps"></i><span id="acc">GPS</span></span>
-  <span id="wx"></span>
-  <span id="bat"></span>
-</header>
+<header><span id="clock">--:--</span><span><i id="gps"></i><span id="acc">GPS</span></span><span id="wx"></span><span id="bat"></span></header>
+<div id="navbar" hidden>
+  <div id="nArrow">⬆</div><div id="nDist">--</div>
+  <div id="nMid"><div id="nTxt">--</div><div id="nRem"></div></div>
+  <button id="nVoice">🔊</button><button id="nEnd">End</button>
+</div>
 <main>
   <section id="ride" class="view on">
     <div id="speedbox"><div id="speed">0</div><div id="unit">km/h</div></div>
     <div class="grid">
-      <div><b id="dist">0.0</b><small id="dlab">km</small></div>
-      <div><b id="avg">0.0</b><small>avg</small></div>
-      <div><b id="max">0</b><small>max</small></div>
-      <div><b id="time">0:00</b><small>riding</small></div>
-      <div><b id="hdg">--</b><small>heading</small></div>
-      <div><b id="alt">--</b><small>alt m</small></div>
+      <div><b id="dist">0.0</b><small id="dlab">km</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>max</small></div>
+      <div><b id="time">0:00</b><small>riding</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
     </div>
-    <div class="row">
-      <button id="units">km/h ⇄ mph</button><button id="theme">Day / Night</button>
-      <button id="full">Fullscreen</button><button id="reset">Reset trip</button>
-    </div>
+    <div id="mini"><span id="mTitle">Music off</span><button id="mPlay">⏯</button><button id="mNext">⏭</button></div>
+    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button><button id="reset">Reset</button></div>
   </section>
   <section id="mapv" class="view">
+    <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="go" style="flex:0">Go</button></div>
+    <div id="res"></div>
     <div id="map"></div>
-    <div class="row"><button id="nav">Navigate to…</button><button id="follow">Following</button></div>
+    <div class="row"><button id="prof">Moto</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
-    <div id="title">No track</div><div id="sub">Add music from your phone</div>
-    <input id="seek" type="range" min="0" max="100" value="0">
-    <div class="ctl"><button id="prev">⏮</button><button id="play">▶</button><button id="next">⏭</button></div>
-    <div class="row"><button id="add">Add songs</button><button id="spot">Spotify</button><button id="ytm">YT Music</button></div>
-    <input id="files" type="file" accept="audio/*" multiple hidden>
+    <div class="row"><button class="src on" data-m="radio">Radio</button><button class="src" data-m="yt">YouTube</button><button class="src" data-m="file">My files</button></div>
+    <div id="p_radio" class="row" style="flex:none"><input id="rq" placeholder="Station name"><button id="rgo" style="flex:0">Find</button>
+      <div class="row" style="flex-basis:100%"><button class="chip" data-q="tag=lofi">Lofi</button><button class="chip" data-q="tag=rock">Rock</button><button class="chip" data-q="tag=bollywood">Bollywood</button><button class="chip" data-q="tag=electronic">Electronic</button><button class="chip" data-q="countrycode=IN">India</button></div></div>
+    <div id="p_yt" hidden style="flex:none;display:flex;flex-direction:column;gap:.5rem"><div class="row"><input id="yturl" placeholder="Paste YouTube video or playlist link"><button id="ytgo" style="flex:0">Load</button></div><div id="ytw"><div id="ytp"></div></div></div>
+    <div id="p_file" hidden class="row" style="flex:none"><button id="add">Add songs from phone</button><input id="files" type="file" accept="audio/*" multiple hidden></div>
+    <div><div id="title">Nothing playing</div><div id="sub">Pick a source above</div></div>
+    <input id="seek" type="range" min="0" max="100" value="0" hidden>
+    <div class="row ctl"><button id="prev">⏮</button><button id="play">▶</button><button id="next">⏭</button></div>
     <div id="plist"></div>
-    <p class="note">Songs added here play inside the app. Spotify / YT Music open their own apps — control those from the phone's notification shade or a Bluetooth remote on the bars.</p>
+    <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
   </section>
 </main>
 <nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button></nav>
 <audio id="au"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
-const $=s=>document.querySelector(s), ls=localStorage;
-const S={unit:ls.bd_unit||'kmh',theme:ls.bd_theme||'night',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
+const $=s=>document.querySelector(s),ls=localStorage;
+const S={unit:ls.bd_unit||'kmh',theme:ls.bd_theme||'night',prof:ls.bd_prof||'car',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
+const N={on:false,steps:[],si:1,pts:[],dest:null,off:0,rr:0,said:{},voice:true,v:8};
 const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
-const mult=()=>S.unit==='kmh'?3.6:2.23694, dm=()=>S.unit==='kmh'?.001:.000621371;
+const mult=()=>S.unit==='kmh'?3.6:2.23694,dmul=()=>S.unit==='kmh'?.001:.000621371;
 const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${String(m).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`};
 const card=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
+const fd=m=>S.unit==='kmh'?(m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1)+' km'):(m<305?Math.round(m*3.281/10)*10+' ft':(m/1609).toFixed(1)+' mi');
 
 /* ---------- UI ---------- */
 function applyTheme(){document.body.dataset.theme=S.theme;ls.bd_theme=S.theme}
-function render(spd){
-  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph'; $('#dlab').textContent=S.unit==='kmh'?'km':'mi';
-  if(spd!=null)$('#speed').textContent=Math.round(spd*mult());
-  $('#dist').textContent=(S.dist*dm()).toFixed(1);
+function render(v){
+  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph';$('#dlab').textContent=S.unit==='kmh'?'km':'mi';
+  if(v!=null)$('#speed').textContent=Math.round(v*mult());
+  $('#dist').textContent=(S.dist*dmul()).toFixed(1);
   $('#avg').textContent=S.mov>5?(S.dist/S.mov*mult()).toFixed(1):'0.0';
-  $('#max').textContent=Math.round(S.max*mult());
-  $('#time').textContent=fmtT(S.mov);
+  $('#max').textContent=Math.round(S.max*mult());$('#time').textContent=fmtT(S.mov);
 }
-function save(){ls.bd_dist=S.dist;ls.bd_max=S.max;ls.bd_mov=S.mov;ls.bd_unit=S.unit}
+const save=()=>{ls.bd_dist=S.dist;ls.bd_max=S.max;ls.bd_mov=S.mov;ls.bd_unit=S.unit};
+let musicInit=false;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button,.view').forEach(e=>e.classList.remove('on'));
   b.classList.add('on');$('#'+b.dataset.v).classList.add('on');
   if(b.dataset.v==='mapv'){initMap();setTimeout(()=>map&&map.invalidateSize(),50)}
+  if(b.dataset.v==='music'&&!musicInit){musicInit=true;if(!Q.radio.length)radio('tag=lofi')}
 });
 $('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
 $('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
 $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
 $('#reset').onclick=()=>{if(confirm('Reset trip?')){S.dist=S.max=S.mov=0;S.last=null;track&&track.setLatLngs([]);save();render(0)}};
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
+addEventListener('resize',()=>map&&map.invalidateSize());
 applyTheme();render(0);
 
 /* ---------- GPS ---------- */
@@ -137,25 +157,23 @@ function onPos(p){
   if(v==null)v=dt>0?d/dt:0;
   if(v<.8||c.accuracy>50)v=0;
   if(c.accuracy<=50){
-    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);if(track)track.addLatLng([c.latitude,c.longitude])}
+    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);track&&track.addLatLng([c.latitude,c.longitude])}
     S.last=c;S.lastT=t;
   }
   render(v);
   if(c.heading!=null&&!isNaN(c.heading)&&v>0)$('#hdg').textContent=card(c.heading);
   if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
-  if(map){me.setLatLng([c.latitude,c.longitude]);if(S.follow)map.panTo([c.latitude,c.longitude],{animate:true})}
-  save();weather();
+  if(map){me.setLatLng([c.latitude,c.longitude]);if(S.follow)map.panTo([c.latitude,c.longitude])}
+  navTick(c);save();weather();
 }
-function onErr(e){$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'}
+const onErr=e=>{$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'};
 if('geolocation' in navigator)navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
 else $('#acc').textContent='No GPS support';
 
-/* ---------- keep screen on ---------- */
-let wl;async function lock(){try{wl=await navigator.wakeLock.request('screen')}catch(e){}}
+/* ---------- screen on, battery, weather ---------- */
+let wl;const lock=async()=>{try{wl=await navigator.wakeLock.request('screen')}catch(e){}};
 lock();document.addEventListener('visibilitychange',()=>{if(!document.hidden)lock()});
 document.addEventListener('click',()=>{if(!wl||wl.released)lock()},{once:true});
-
-/* ---------- battery & weather ---------- */
 navigator.getBattery&&navigator.getBattery().then(b=>{const u=()=>$('#bat').textContent=Math.round(b.level*100)+'%'+(b.charging?'⚡':'');u();b.onlevelchange=b.onchargingchange=u});
 let wxT=0;function weather(){
   if(!S.pos||Date.now()-wxT<9e5)return;wxT=Date.now();
@@ -164,35 +182,142 @@ let wxT=0;function weather(){
 }
 
 /* ---------- map ---------- */
-let map,me,track;
+let map,me,track,rl,dmk;
 function initMap(){
   if(map||!window.L)return;
-  map=L.map('map',{zoomControl:false}).setView([S.pos?S.pos.latitude:15.49,S.pos?S.pos.longitude:73.83],16);
+  const p=S.pos?[S.pos.latitude,S.pos.longitude]:[15.49,73.83];
+  map=L.map('map',{zoomControl:false}).setView(p,16);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
   track=L.polyline([],{color:'#ffb81c',weight:5}).addTo(map);
-  me=L.circleMarker(S.pos?[S.pos.latitude,S.pos.longitude]:[0,0],{radius:9,color:'#fff',weight:3,fillColor:'#ff5d4d',fillOpacity:1}).addTo(map);
+  me=L.circleMarker(p,{radius:9,color:'#fff',weight:3,fillColor:'#ff5d4d',fillOpacity:1}).addTo(map);
   map.on('dragstart',()=>{S.follow=false;$('#follow').textContent='Re-centre'});
+  map.on('contextmenu',e=>route(e.latlng.lat,e.latlng.lng));
 }
-$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';if(S.pos&&map)map.setView([S.pos.latitude,S.pos.longitude],16)};
-$('#nav').onclick=()=>{const q=prompt('Where to?');if(q)location.href='https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination='+encodeURIComponent(q)};
+$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';if(S.pos&&map)map.setView([S.pos.latitude,S.pos.longitude],17)};
+const profLabel=()=>$('#prof').textContent=S.prof==='bike'?'Cycle':'Moto';profLabel();
+$('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;profLabel();if(N.on)route(N.dest[0],N.dest[1],true)};
 
-/* ---------- music ---------- */
-const au=$('#au');let list=[],cur=-1;
-$('#add').onclick=()=>$('#files').click();
-$('#files').onchange=e=>{[...e.target.files].forEach(f=>list.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)}));drawList();if(cur<0&&list.length)load(0,true)};
-function drawList(){$('#plist').innerHTML='';list.forEach((t,i)=>{const d=document.createElement('div');d.textContent=t.name;d.className=i===cur?'cur':'';d.onclick=()=>load(i,true);$('#plist').append(d)})}
-function load(i,go){if(!list.length)return;cur=(i+list.length)%list.length;au.src=list[cur].url;$('#title').textContent=list[cur].name;$('#sub').textContent=`Track ${cur+1} of ${list.length}`;drawList();
-  if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:list[cur].name,artist:'Handlebar Dash'});
-  go&&au.play()}
-const toggle=()=>au.paused?au.play():au.pause();
-$('#play').onclick=toggle;$('#next').onclick=()=>load(cur+1,true);$('#prev').onclick=()=>au.currentTime>3?au.currentTime=0:load(cur-1,true);
-au.onplay=()=>$('#play').textContent='⏸';au.onpause=()=>$('#play').textContent='▶';au.onended=()=>load(cur+1,true);
-au.ontimeupdate=()=>{if(au.duration)$('#seek').value=au.currentTime/au.duration*100};
+/* ---------- search + navigation (free: OpenStreetMap Nominatim + OSRM) ---------- */
+const msg=t=>$('#res').innerHTML=`<div>${t}</div>`;
+$('#q').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+$('#go').onclick=async()=>{
+  const q=$('#q').value.trim();if(!q)return;msg('Searching…');
+  const b=S.pos?`&viewbox=${S.pos.longitude-.6},${S.pos.latitude+.6},${S.pos.longitude+.6},${S.pos.latitude-.6}`:'';
+  try{
+    const a=await(await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=en&q='+encodeURIComponent(q)+b)).json();
+    $('#res').innerHTML='';if(!a.length)return msg('No match. Try adding the town name.');
+    a.forEach(p=>{const d=document.createElement('div');d.textContent=p.display_name.split(',').slice(0,3).join(',');
+      d.onclick=()=>{$('#res').innerHTML='';route(+p.lat,+p.lon)};$('#res').append(d)});
+  }catch(e){msg('Search needs an internet connection.')}
+};
+const AR={left:'⬅',right:'➡','slight left':'↖','slight right':'↗','sharp left':'↙','sharp right':'↘',straight:'⬆',uturn:'↩'};
+function instr(s){
+  const m=s.maneuver,t=m.type,d=m.modifier||'straight';
+  if(t==='arrive')return{ar:'⚑',txt:'Arrive at destination'};
+  if(t==='depart')return{ar:'⬆',txt:'Head out'};
+  if(/roundabout|rotary/.test(t))return{ar:'⟳',txt:'At the roundabout, take exit '+(m.exit||'ahead')};
+  const txt=t==='fork'?'Keep '+d.replace('slight ',''):d==='straight'?'Continue straight':d==='uturn'?'Make a U-turn':/slight/.test(d)?'Bear '+d.replace('slight ',''):'Turn '+d;
+  return{ar:AR[d]||'⬆',txt};
+}
+const say=t=>{if(N.voice&&'speechSynthesis' in window)speechSynthesis.speak(new SpeechSynthesisUtterance(t))};
+async function route(lat,lon,quiet){
+  if(!S.pos)return msg('Waiting for GPS fix…');
+  initMap();
+  const base=S.prof==='bike'?'routed-bike':'routed-car';
+  try{
+    const j=await(await fetch(`https://routing.openstreetmap.de/${base}/route/v1/driving/${S.pos.longitude},${S.pos.latitude};${lon},${lat}?overview=full&geometries=geojson&steps=true`)).json();
+    const r=j.routes&&j.routes[0];if(!r)throw 0;
+    N.steps=r.legs[0].steps;N.pts=r.geometry.coordinates.map(c=>[c[1],c[0]]);N.si=Math.min(1,N.steps.length-1);
+    N.dest=[lat,lon];N.off=0;N.said={};N.v=r.distance/Math.max(r.duration,1);N.on=true;
+    rl&&map.removeLayer(rl);dmk&&map.removeLayer(dmk);
+    rl=L.polyline(N.pts,{color:'#3b9cff',weight:6,opacity:.85}).addTo(map);
+    dmk=L.circleMarker([lat,lon],{radius:10,color:'#fff',weight:3,fillColor:'#5fd38d',fillOpacity:1}).addTo(map);
+    $('#navbar').hidden=false;
+    if(!quiet){map.fitBounds(rl.getBounds(),{padding:[30,30]});S.follow=false;setTimeout(()=>{S.follow=true;$('#follow').textContent='Following';map.setView([S.pos.latitude,S.pos.longitude],17)},5000);say('Route ready. '+fd(r.distance)+'.')}
+    navTick(S.pos);
+  }catch(e){msg('Could not get a route. Check internet or try another place.')}
+}
+function segD(p,a,b){const k=Math.cos(p[0]*Math.PI/180),x=(b[1]-a[1])*k,y=b[0]-a[0],px=(p[1]-a[1])*k,py=p[0]-a[0],l=x*x+y*y,t=l?Math.max(0,Math.min(1,(px*x+py*y)/l)):0;return Math.hypot(px-t*x,py-t*y)*111320}
+function navTick(c){
+  if(!N.on)return;
+  const p=[c.latitude,c.longitude];let md=1e9;
+  for(let i=1;i<N.pts.length;i++){const d=segD(p,N.pts[i-1],N.pts[i]);if(d<md)md=d}
+  N.off=md>Math.max(60,(c.accuracy||0)*2)?N.off+1:0;
+  if(N.off>=4&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return route(N.dest[0],N.dest[1],true)}
+  const s=N.steps[N.si];if(!s)return;
+  const d=hav(p[0],p[1],s.maneuver.location[1],s.maneuver.location[0]),fin=s.maneuver.type==='arrive';
+  if(fin&&d<30){say('You have arrived');return endNav()}
+  if(!fin&&d<25&&N.si<N.steps.length-1){N.si++;return navTick(c)}
+  const ix=instr(s),on=s.name?' onto '+s.name:'',ka=N.si+'a',kb=N.si+'b';
+  if(d<70&&!N.said[kb]){N.said[ka]=N.said[kb]=1;say(ix.txt+on)}
+  else if(d<300&&!N.said[ka]){N.said[ka]=1;say('In '+(S.unit==='kmh'?Math.round(d/50)*50+' metres':Math.round(d*3.281/50)*50+' feet')+', '+ix.txt.toLowerCase()+on)}
+  let rem=d;for(let j=N.si;j<N.steps.length;j++)rem+=N.steps[j].distance;
+  $('#nArrow').textContent=ix.ar;$('#nDist').textContent=fd(d);$('#nTxt').textContent=ix.txt+(s.name?' · '+s.name:'');
+  $('#nRem').textContent=fd(rem)+' · '+Math.max(1,Math.round(rem/N.v/60))+' min left';
+}
+function endNav(){N.on=false;$('#navbar').hidden=true;rl&&map.removeLayer(rl);dmk&&map.removeLayer(dmk);rl=dmk=null;'speechSynthesis' in window&&speechSynthesis.cancel()}
+$('#nEnd').onclick=endNav;
+$('#nVoice').onclick=()=>{N.voice=!N.voice;$('#nVoice').textContent=N.voice?'🔊':'🔇';if(!N.voice)speechSynthesis.cancel()};
+
+/* ---------- music: radio (free), YouTube (free, with ads), local files ---------- */
+const au=$('#au'),Q={radio:[],file:[]},I={radio:-1,file:-1};let mode='radio',yt;
+function setTitle(a,b){$('#title').textContent=a;$('#sub').textContent=b||'';$('#mTitle').textContent=a}
+function draw(){const q=Q[mode]||[];$('#plist').innerHTML='';q.forEach((t,i)=>{const d=document.createElement('div');d.textContent=t.name;if(i===I[mode])d.className='cur';d.onclick=()=>playAt(i);$('#plist').append(d)})}
+function playAt(i){
+  const q=Q[mode];if(!q.length)return;I[mode]=(i+q.length)%q.length;const t=q[I[mode]];
+  au.src=t.url;au.play().catch(()=>{});setTitle(t.name,t.sub);draw();
+  if(mode==='radio')ls.bd_st=JSON.stringify(t);
+  if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:t.sub||'Handlebar Dash'});
+}
+function setMode(m){
+  au.pause();yt&&yt.pauseVideo&&yt.pauseVideo();mode=m;$('#play').textContent='▶';
+  document.querySelectorAll('.src').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  ['radio','yt','file'].forEach(x=>$('#p_'+x).hidden=x!==m);$('#seek').hidden=m!=='file';draw();
+}
+document.querySelectorAll('.src').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+function toggle(){
+  if(mode==='yt'){if(!yt)return ytLoad($('#yturl').value);return yt.getPlayerState()===1?yt.pauseVideo():yt.playVideo()}
+  if(!au.src){if(mode==='radio'&&ls.bd_st){Q.radio=Q.radio.length?Q.radio:[JSON.parse(ls.bd_st)];return playAt(Math.max(0,Q.radio.findIndex(s=>s.url===JSON.parse(ls.bd_st).url)))}return playAt(0)}
+  au.paused?au.play():au.pause();
+}
+const step=d=>mode==='yt'?yt&&(d>0?yt.nextVideo():yt.previousVideo()):playAt((I[mode]<0?0:I[mode])+d);
+$('#play').onclick=$('#mPlay').onclick=toggle;$('#next').onclick=$('#mNext').onclick=()=>step(1);$('#prev').onclick=()=>step(-1);
+au.onplay=()=>$('#play').textContent='⏸';au.onpause=()=>$('#play').textContent='▶';au.onended=()=>mode==='file'&&step(1);
+au.ontimeupdate=()=>{if(au.duration&&mode==='file')$('#seek').value=au.currentTime/au.duration*100};
 $('#seek').oninput=e=>{if(au.duration)au.currentTime=e.target.value/100*au.duration};
-if('mediaSession' in navigator){const m=navigator.mediaSession;m.setActionHandler('play',()=>au.play());m.setActionHandler('pause',()=>au.pause());m.setActionHandler('nexttrack',()=>load(cur+1,true));m.setActionHandler('previoustrack',()=>load(cur-1,true))}
+if('mediaSession' in navigator){const m=navigator.mediaSession;m.setActionHandler('play',()=>toggle());m.setActionHandler('pause',()=>toggle());m.setActionHandler('nexttrack',()=>step(1));m.setActionHandler('previoustrack',()=>step(-1))}
+/* radio */
+async function radio(p){
+  $('#sub').textContent='Finding stations…';
+  for(const h of ['de1','at1','fi1']){try{
+    const a=await(await fetch(`https://${h}.api.radio-browser.info/json/stations/search?hidebroken=true&is_https=true&order=clickcount&reverse=true&limit=40&${p}`)).json();
+    Q.radio=a.filter(s=>s.url_resolved&&/mp3|aac/i.test(s.codec)).map(s=>({name:s.name.trim(),sub:(s.tags||s.country||'').split(',').slice(0,3).join(' · '),url:s.url_resolved}));
+    I.radio=-1;if(mode==='radio')draw();$('#sub').textContent=Q.radio.length?'Tap a station':'No stations found';return}catch(e){}}
+  $('#sub').textContent='Radio needs an internet connection';
+}
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>radio(b.dataset.q));
+$('#rgo').onclick=()=>{const q=$('#rq').value.trim();if(q)radio('name='+encodeURIComponent(q))};
+$('#rq').onkeydown=e=>e.key==='Enter'&&$('#rgo').click();
+/* youtube */
+function ytLoad(url){
+  const l=(url.match(/[?&]list=([\w-]+)/)||[])[1],v=(url.match(/(?:v=|youtu\.be\/)([\w-]{11})/)||[])[1];
+  if(!l&&!v){$('#sub').textContent='Paste a YouTube video or playlist link';return}
+  ls.bd_yt=url;
+  const go=()=>{
+    if(yt)return l?yt.loadPlaylist({listType:'playlist',list:l}):yt.loadVideoById(v);
+    yt=new YT.Player('ytp',{width:'100%',height:'100%',videoId:l?undefined:v,playerVars:Object.assign({playsinline:1,autoplay:1},l?{listType:'playlist',list:l}:{}),
+      events:{onReady:e=>e.target.playVideo(),onStateChange:e=>{$('#play').textContent=e.data===1?'⏸':'▶';const d=yt.getVideoData&&yt.getVideoData();if(d&&d.title)setTitle(d.title,d.author)}}});
+  };
+  if(window.YT&&YT.Player)return go();
+  window.onYouTubeIframeAPIReady=go;
+  if(!$('#ytapi')){const s=document.createElement('script');s.id='ytapi';s.src='https://www.youtube.com/iframe_api';document.head.append(s)}
+}
+$('#ytgo').onclick=()=>ytLoad($('#yturl').value);$('#yturl').value=ls.bd_yt||'';
+/* local files */
+$('#add').onclick=()=>$('#files').click();
+$('#files').onchange=e=>{const had=Q.file.length;[...e.target.files].forEach(f=>Q.file.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)}));draw();if(!had)playAt(0)};
 $('#spot').onclick=()=>location.href='intent://#Intent;package=com.spotify.music;end';
 $('#ytm').onclick=()=>location.href='intent://#Intent;package=com.google.android.apps.youtube.music;end';
-
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
