@@ -36,7 +36,7 @@ nav button{flex:1;border:0;border-radius:0;padding:.7rem 0;font-size:1.4rem;colo
 nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 /* ride */
 #ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto "k" auto/minmax(0,1fr)}
-#speedbox{grid-area:s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#speedbox{grid-area:s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 #speed{font-size:min(46vw,40dvh);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
 #unit{font-size:1.6rem;color:var(--dim);font-weight:700;margin-top:.3rem}
 .grid{grid-area:t;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;border-top:1px solid var(--line);padding-top:.4rem;text-align:center}
@@ -50,7 +50,21 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 #mapv.on{padding:.5rem}
 #res{max-height:28%;overflow:auto}#res div{padding:.55rem .3rem;font-size:1.15rem;border-bottom:1px solid var(--line)}
 #q,#yturl{flex:1;min-width:0}
-#map{flex:1;border-radius:.7rem;min-height:8rem}
+#mapw{flex:1;position:relative;overflow:hidden;border-radius:.7rem;min-height:8rem}
+#map{position:absolute;left:0;top:0;width:100%;height:100%;transition:transform .8s linear;will-change:transform}
+#mhud{position:absolute;z-index:1000;top:.5rem;left:.5rem;right:.5rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+#mhud .sign{pointer-events:auto}
+#mSpeed{font-size:3rem;font-weight:800;background:var(--bg);padding:0 .6rem;border-radius:.6rem;line-height:1.15;font-variant-numeric:tabular-nums}
+#attr{position:absolute;z-index:1000;right:.3rem;bottom:.2rem;font-size:.75rem;background:#fffc;color:#000;padding:0 .3rem;border-radius:.3rem}
+.sign{width:clamp(3rem,11vmin,5.2rem);height:clamp(3rem,11vmin,5.2rem);border-radius:50%;background:#fff;border:.45rem solid #d4202c;color:#111;display:flex;align-items:center;justify-content:center;font-size:clamp(1.4rem,5vmin,2.4rem);font-weight:800}
+.sign.est{border-style:dashed;opacity:.75}.sign.none{border-color:var(--line);color:var(--dim);background:transparent}
+#signbox{position:absolute;top:.2rem;right:.2rem;display:flex;flex-direction:column;align-items:center;gap:.2rem;color:var(--dim);font-size:.95rem}
+body.over{box-shadow:inset 0 0 0 .45rem var(--bad)}body.over .sign{background:var(--bad);color:#fff}
+@media (prefers-reduced-motion:no-preference){body.over .sign{animation:blink .6s steps(2) infinite}}
+@keyframes blink{50%{opacity:.4}}
+#sos{position:fixed;inset:0;z-index:5000;background:#b3121f;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:1rem}
+#sos button{color:#fff;border-color:#fff;font-size:1.6rem;width:80%}#sos h1{font-size:2.4rem}#sosT{font-size:6rem;font-weight:800;line-height:1}
+#ec{width:100%}
 [data-theme=night] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
 /* music */
 #title{font-size:1.9rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -83,7 +97,7 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 </div>
 <main>
   <section id="ride" class="view on">
-    <div id="speedbox"><div id="speed">0</div><div id="unit">km/h</div></div>
+    <div id="speedbox"><div id="signbox"><div class="sign">–</div><small id="lsrc"></small></div><div id="speed">0</div><div id="unit">km/h</div><div id="road" class="note"></div></div>
     <div class="grid">
       <div><b id="dist">0.0</b><small id="dlab">km</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>max</small></div>
       <div><b id="time">0:00</b><small>riding</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
@@ -94,8 +108,8 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
-    <div id="map"></div>
-    <div class="row"><button id="prof">Moto</button><button id="follow">Following</button></div>
+    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><div id="attr">© OpenStreetMap</div></div>
+    <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
     <div class="row"><button class="src on" data-m="radio">Radio</button><button class="src" data-m="yt">YouTube</button><button class="src" data-m="file">My files</button></div>
@@ -109,14 +123,24 @@ nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
     <div id="plist"></div>
     <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
   </section>
+<section id="safety" class="view">
+    <div class="row"><button id="sAl"></button><button id="sTol"></button></div>
+    <div class="row"><button id="sEst"></button></div>
+    <p class="note">Limits come from OpenStreetMap road data, fetched as you ride. Where a road has no limit tagged, the sign is dashed and shows an estimate for that road type. Tap any speed-limit sign to set a limit yourself.</p>
+    <div class="row"><button id="sCr"></button><button id="sTest">Test alarm</button></div>
+    <input id="ec" type="tel" placeholder="Emergency contact number">
+    <div class="row"><button id="shareLoc">Share location</button><button id="sosMsg">SOS message</button><button id="call">Call 112</button></div>
+    <p class="note">Crash detection is experimental: it watches for a hard impact followed by stopping, then sounds an alarm you can cancel. A web page cannot send texts by itself, so you tap Send. A break reminder also sounds every 2 hours of riding.</p>
+  </section>
 </main>
-<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button></nav>
+<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button><button data-v="safety">Safety</button></nav>
+<div id="sos" hidden><h1>Crash detected</h1><div id="sosT">30</div><button id="sosOk">I'm OK</button><button id="sosSend" hidden>Send SOS message</button><button id="sosCall">Call 112</button></div>
 <audio id="au"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=s=>document.querySelector(s),ls=localStorage;
 const S={unit:ls.bd_unit||'kmh',theme:ls.bd_theme||'night',prof:ls.bd_prof||'car',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
-const N={on:false,steps:[],si:1,pts:[],dest:null,off:0,rr:0,said:{},voice:true,v:8};
+const N={on:false,steps:[],si:1,pi:1,dn:999,pts:[],dest:null,off:0,rr:0,said:{},voice:true,v:8};
 const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
 const mult=()=>S.unit==='kmh'?3.6:2.23694,dmul=()=>S.unit==='kmh'?.001:.000621371;
 const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${String(m).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`};
@@ -127,7 +151,7 @@ const fd=m=>S.unit==='kmh'?(m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1)+
 function applyTheme(){document.body.dataset.theme=S.theme;ls.bd_theme=S.theme}
 function render(v){
   $('#unit').textContent=S.unit==='kmh'?'km/h':'mph';$('#dlab').textContent=S.unit==='kmh'?'km':'mi';
-  if(v!=null)$('#speed').textContent=Math.round(v*mult());
+  if(v!=null){const t=Math.round(v*mult());$('#speed').textContent=t;$('#mSpeed').textContent=t}
   $('#dist').textContent=(S.dist*dmul()).toFixed(1);
   $('#avg').textContent=S.mov>5?(S.dist/S.mov*mult()).toFixed(1):'0.0';
   $('#max').textContent=Math.round(S.max*mult());$('#time').textContent=fmtT(S.mov);
@@ -137,15 +161,15 @@ let musicInit=false;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button,.view').forEach(e=>e.classList.remove('on'));
   b.classList.add('on');$('#'+b.dataset.v).classList.add('on');
-  if(b.dataset.v==='mapv'){initMap();setTimeout(()=>map&&map.invalidateSize(),50)}
+  if(b.dataset.v==='mapv'){initMap();setTimeout(()=>{sizeMap();mapFollowNow()},50)}
   if(b.dataset.v==='music'&&!musicInit){musicInit=true;if(!Q.radio.length)radio('tag=lofi')}
 });
 $('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
 $('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
 $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
-$('#reset').onclick=()=>{if(confirm('Reset trip?')){S.dist=S.max=S.mov=0;S.last=null;track&&track.setLatLngs([]);save();render(0)}};
+$('#reset').onclick=()=>{if(confirm('Reset trip?')){S.dist=S.max=S.mov=A.lb=0;S.last=null;track&&track.setLatLngs([]);save();render(0)}};
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
-addEventListener('resize',()=>map&&map.invalidateSize());
+addEventListener('resize',()=>{sizeMap();mapFollowNow()});
 applyTheme();render(0);
 
 /* ---------- GPS ---------- */
@@ -163,7 +187,9 @@ function onPos(p){
   render(v);
   if(c.heading!=null&&!isNaN(c.heading)&&v>0)$('#hdg').textContent=card(c.heading);
   if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
-  if(map){me.setLatLng([c.latitude,c.longitude]);if(S.follow)map.panTo([c.latitude,c.longitude])}
+  if(c.heading!=null&&!isNaN(c.heading)&&v>1.5)M.h=c.heading;
+  spd=v;if(map&&$('#mapv').classList.contains('on'))mapTick(c,v);
+  limitTick(c);alertTick(v);breakTick();
   navTick(c);save();weather();
 }
 const onErr=e=>{$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'};
@@ -173,8 +199,8 @@ else $('#acc').textContent='No GPS support';
 /* ---------- screen on, battery, weather ---------- */
 let wl;const lock=async()=>{try{wl=await navigator.wakeLock.request('screen')}catch(e){}};
 lock();document.addEventListener('visibilitychange',()=>{if(!document.hidden)lock()});
-document.addEventListener('click',()=>{if(!wl||wl.released)lock()},{once:true});
-navigator.getBattery&&navigator.getBattery().then(b=>{const u=()=>$('#bat').textContent=Math.round(b.level*100)+'%'+(b.charging?'⚡':'');u();b.onlevelchange=b.onchargingchange=u});
+document.addEventListener('click',()=>{if(!wl||wl.released)lock();try{ac=ac||new AudioContext();ac.resume()}catch(e){}},{once:true});
+navigator.getBattery&&navigator.getBattery().then(b=>{const u=()=>{$('#bat').textContent=Math.round(b.level*100)+'%'+(b.charging?'⚡':'');if(b.level<.15&&!b.charging&&!A.bw){A.bw=1;sayf('Phone battery low')}};u();b.onlevelchange=b.onchargingchange=u});
 let wxT=0;function weather(){
   if(!S.pos||Date.now()-wxT<9e5)return;wxT=Date.now();
   fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.pos.latitude}&longitude=${S.pos.longitude}&current=temperature_2m,precipitation`)
@@ -182,18 +208,50 @@ let wxT=0;function weather(){
 }
 
 /* ---------- map ---------- */
-let map,me,track,rl,dmk;
+let map,me,track,rl,dmk,arrowEl;
+const M={mode:ls.bd_mm||'head',rot:0,h:0,lz:0};
+function sizeMap(){
+  const W=$('#mapw').clientWidth,H=$('#mapw').clientHeight,el=$('#map');if(!W)return;
+  if(M.mode==='head'){const o=H*.22,d=Math.ceil(Math.hypot(W,H+2*o));Object.assign(el.style,{width:d+'px',height:d+'px',left:(W-d)/2+'px',top:(H-d)/2+o+'px'})}
+  else Object.assign(el.style,{width:'100%',height:'100%',left:'0',top:'0',transform:'none'});
+  map&&map.invalidateSize({animate:false});
+}
+function setRot(h){
+  const el=$('#map');if(M.mode!=='head'){el.style.transform='none';return}
+  M.rot+=((h-M.rot)%360+540)%360-180;el.style.transform=`rotate(${-M.rot}deg)`;
+}
+const setDrag=()=>{if(map)M.mode==='head'?map.dragging.disable():map.dragging.enable()};
 function initMap(){
   if(map||!window.L)return;
+  sizeMap();
   const p=S.pos?[S.pos.latitude,S.pos.longitude]:[15.49,73.83];
-  map=L.map('map',{zoomControl:false}).setView(p,16);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-  track=L.polyline([],{color:'#ffb81c',weight:5}).addTo(map);
-  me=L.circleMarker(p,{radius:9,color:'#fff',weight:3,fillColor:'#ff5d4d',fillOpacity:1}).addTo(map);
+  map=L.map('map',{zoomControl:false,attributionControl:false,touchZoom:'center',doubleClickZoom:false}).setView(p,16);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:false}).addTo(map);
+  track=L.polyline([],{color:'#ffb81c',weight:5,smoothFactor:2}).addTo(map);
+  me=L.marker(p,{icon:L.divIcon({className:'',iconSize:[40,40],iconAnchor:[20,20],html:'<svg viewBox="0 0 40 40" width="40" height="40"><path d="M20 3 33 35 20 28 7 35Z" fill="#ffb81c" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
+  arrowEl=me.getElement().firstChild;
   map.on('dragstart',()=>{S.follow=false;$('#follow').textContent='Re-centre'});
-  map.on('contextmenu',e=>route(e.latlng.lat,e.latlng.lng));
+  map.on('contextmenu',e=>{if(M.mode==='north')route(e.latlng.lat,e.latlng.lng)});
+  $('#mapw').addEventListener('touchstart',()=>M.lz=Date.now()+20000,{passive:true});
+  setDrag();
 }
-$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';if(S.pos&&map)map.setView([S.pos.latitude,S.pos.longitude],17)};
+function mapFollowNow(){
+  if(!map||!S.pos)return;const p=[S.pos.latitude,S.pos.longitude];
+  me.setLatLng(p);if(S.follow||M.mode==='head')map.setView(p,map.getZoom(),{animate:false});
+  setRot(M.h);if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;
+}
+function mapTick(c,v){ // only runs while the Map tab is visible
+  const p=[c.latitude,c.longitude];me.setLatLng(p);
+  if(v>1.5&&c.heading!=null&&!isNaN(c.heading)){if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;setRot(M.h)}
+  if(S.follow||M.mode==='head'){
+    map.panTo(p,{animate:true,duration:.9,easeLinearity:1});
+    const k=v*3.6;let z=k<15?17:k<40?16:k<70?15:14;if(N.on&&N.dn<150)z=17;
+    if(z!==map.getZoom()&&Date.now()>M.lz){M.lz=Date.now()+6000;map.setZoom(z)}
+  }
+}
+const modeLabel=()=>$('#mmode').textContent=M.mode==='head'?'Heading-up':'North-up';modeLabel();
+$('#mmode').onclick=()=>{M.mode=M.mode==='head'?'north':'head';ls.bd_mm=M.mode;modeLabel();S.follow=true;$('#follow').textContent='Following';sizeMap();setDrag();mapFollowNow()};
+$('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';mapFollowNow()};
 const profLabel=()=>$('#prof').textContent=S.prof==='bike'?'Cycle':'Moto';profLabel();
 $('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;profLabel();if(N.on)route(N.dest[0],N.dest[1],true)};
 
@@ -219,7 +277,9 @@ function instr(s){
   const txt=t==='fork'?'Keep '+d.replace('slight ',''):d==='straight'?'Continue straight':d==='uturn'?'Make a U-turn':/slight/.test(d)?'Bear '+d.replace('slight ',''):'Turn '+d;
   return{ar:AR[d]||'⬆',txt};
 }
-const say=t=>{if(N.voice&&'speechSynthesis' in window)speechSynthesis.speak(new SpeechSynthesisUtterance(t))};
+const duck=v=>{au.volume=v;try{yt&&yt.setVolume&&yt.setVolume(v*100)}catch(e){}};
+const sayf=t=>{if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);u.onstart=()=>duck(.25);u.onend=u.onerror=()=>duck(1);speechSynthesis.speak(u)};
+const say=t=>N.voice&&sayf(t);
 async function route(lat,lon,quiet){
   if(!S.pos)return msg('Waiting for GPS fix…');
   initMap();
@@ -228,27 +288,26 @@ async function route(lat,lon,quiet){
     const j=await(await fetch(`https://routing.openstreetmap.de/${base}/route/v1/driving/${S.pos.longitude},${S.pos.latitude};${lon},${lat}?overview=full&geometries=geojson&steps=true`)).json();
     const r=j.routes&&j.routes[0];if(!r)throw 0;
     N.steps=r.legs[0].steps;N.pts=r.geometry.coordinates.map(c=>[c[1],c[0]]);N.si=Math.min(1,N.steps.length-1);
-    N.dest=[lat,lon];N.off=0;N.said={};N.v=r.distance/Math.max(r.duration,1);N.on=true;
+    N.dest=[lat,lon];N.off=0;N.pi=1;N.said={};N.v=r.distance/Math.max(r.duration,1);N.on=true;
     rl&&map.removeLayer(rl);dmk&&map.removeLayer(dmk);
-    rl=L.polyline(N.pts,{color:'#3b9cff',weight:6,opacity:.85}).addTo(map);
+    rl=L.polyline(N.pts,{color:'#3b9cff',weight:6,opacity:.85,smoothFactor:2}).addTo(map);
     dmk=L.circleMarker([lat,lon],{radius:10,color:'#fff',weight:3,fillColor:'#5fd38d',fillOpacity:1}).addTo(map);
     $('#navbar').hidden=false;
-    if(!quiet){map.fitBounds(rl.getBounds(),{padding:[30,30]});S.follow=false;setTimeout(()=>{S.follow=true;$('#follow').textContent='Following';map.setView([S.pos.latitude,S.pos.longitude],17)},5000);say('Route ready. '+fd(r.distance)+'.')}
+    if(!quiet){if(M.mode==='north'){map.fitBounds(rl.getBounds(),{padding:[30,30]});S.follow=false;setTimeout(()=>{S.follow=true;$('#follow').textContent='Following';mapFollowNow()},5000)}say('Route ready. '+fd(r.distance)+'.')}
     navTick(S.pos);
   }catch(e){msg('Could not get a route. Check internet or try another place.')}
 }
 function segD(p,a,b){const k=Math.cos(p[0]*Math.PI/180),x=(b[1]-a[1])*k,y=b[0]-a[0],px=(p[1]-a[1])*k,py=p[0]-a[0],l=x*x+y*y,t=l?Math.max(0,Math.min(1,(px*x+py*y)/l)):0;return Math.hypot(px-t*x,py-t*y)*111320}
 function navTick(c){
   if(!N.on)return;
-  const p=[c.latitude,c.longitude];let md=1e9;
-  for(let i=1;i<N.pts.length;i++){const d=segD(p,N.pts[i-1],N.pts[i]);if(d<md)md=d}
+  const p=[c.latitude,c.longitude];const md=nearest(p);
   N.off=md>Math.max(60,(c.accuracy||0)*2)?N.off+1:0;
   if(N.off>=4&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return route(N.dest[0],N.dest[1],true)}
   const s=N.steps[N.si];if(!s)return;
   const d=hav(p[0],p[1],s.maneuver.location[1],s.maneuver.location[0]),fin=s.maneuver.type==='arrive';
   if(fin&&d<30){say('You have arrived');return endNav()}
   if(!fin&&d<25&&N.si<N.steps.length-1){N.si++;return navTick(c)}
-  const ix=instr(s),on=s.name?' onto '+s.name:'',ka=N.si+'a',kb=N.si+'b';
+  N.dn=d;const ix=instr(s),on=s.name?' onto '+s.name:'',ka=N.si+'a',kb=N.si+'b';
   if(d<70&&!N.said[kb]){N.said[ka]=N.said[kb]=1;say(ix.txt+on)}
   else if(d<300&&!N.said[ka]){N.said[ka]=1;say('In '+(S.unit==='kmh'?Math.round(d/50)*50+' metres':Math.round(d*3.281/50)*50+' feet')+', '+ix.txt.toLowerCase()+on)}
   let rem=d;for(let j=N.si;j<N.steps.length;j++)rem+=N.steps[j].distance;
@@ -318,6 +377,76 @@ $('#add').onclick=()=>$('#files').click();
 $('#files').onchange=e=>{const had=Q.file.length;[...e.target.files].forEach(f=>Q.file.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)}));draw();if(!had)playAt(0)};
 $('#spot').onclick=()=>location.href='intent://#Intent;package=com.spotify.music;end';
 $('#ytm').onclick=()=>location.href='intent://#Intent;package=com.google.android.apps.youtube.music;end';
+/* ---------- safety: speed limits, alerts, crash detection ---------- */
+let spd=0,ac,imp=0,sosT=null;
+const A={on:ls.bd_al!=='0',est:ls.bd_est==='1',tol:ls.bd_tol==null?5:+ls.bd_tol,crash:ls.bd_cr!=='0',last:0,vt:0,lb:S.mov,bw:0,ec:ls.bd_ec||''};
+const L_={ways:[],cx:null,t:0,cur:null,road:''};
+const EST={motorway:80,trunk:70,primary:60,secondary:50,tertiary:40,unclassified:40,residential:30,living_street:20,service:20};
+const parseMax=v=>{const m=String(v||'').match(/^(\d+)\s*(mph)?/);return m?Math.round(+m[1]*(m[2]?1.609:1)):0};
+function nearest(p){ // distance from route, searching a window around the last match first
+  const g=N.pts;let md=1e9,bi=N.pi;
+  const scan=(a,b)=>{for(let i=Math.max(1,a);i<Math.min(g.length,b);i++){const d=segD(p,g[i-1],g[i]);if(d<md){md=d;bi=i}}};
+  scan(N.pi-20,N.pi+150);if(md>60)scan(1,g.length);N.pi=bi;return md;
+}
+async function loadWays(lat,lon){
+  L_.t=Date.now();
+  const q=`[out:json][timeout:10];way(around:400,${lat},${lon})[highway~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|service)(_link)?$"];out tags geom;`;
+  for(const h of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){try{
+    const j=await(await fetch(h+'?data='+encodeURIComponent(q))).json();
+    L_.ways=j.elements.filter(w=>w.geometry).map(w=>({t:w.tags||{},g:w.geometry.map(p=>[p.lat,p.lon])}));L_.cx=[lat,lon];return}catch(e){}}
+}
+function limitTick(c){
+  const p=[c.latitude,c.longitude];
+  if((!L_.cx||hav(p[0],p[1],L_.cx[0],L_.cx[1])>150)&&Date.now()-L_.t>4000)loadWays(p[0],p[1]);
+  let best=null,bd=1e9,lim=0,src='';
+  for(const w of L_.ways)for(let i=1;i<w.g.length;i++){const d=segD(p,w.g[i-1],w.g[i]);if(d<bd){bd=d;best=w}}
+  L_.road='';if(+ls.bd_man){lim=+ls.bd_man;src='set'}
+  if(best&&bd<=Math.max(25,(c.accuracy||0)*1.2)){
+    L_.road=best.t.name||best.t.ref||'';
+    if(!lim){const mx=parseMax(best.t.maxspeed);if(mx){lim=mx;src='OSM'}else{lim=EST[best.t.highway.replace('_link','')]||0;src='est'}}
+  }
+  L_.cur={lim,src};
+  const t=lim?(S.unit==='kmh'?lim:Math.round(lim/1.609)):'–';
+  document.querySelectorAll('.sign').forEach(e=>{e.textContent=t;e.className='sign'+(lim?(src==='est'?' est':''):' none')});
+  $('#lsrc').textContent=lim?({OSM:'map data',est:'estimated',set:'set by you'})[src]:'no limit data';$('#road').textContent=L_.road;
+}
+const beep=(f=880,ms=250)=>{try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.2;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+ms/1000)}catch(e){}};
+function alertTick(v){
+  const L=L_.cur,k=v*3.6;let over=false;
+  if(A.on&&L&&L.lim&&(L.src!=='est'||A.est)&&k>L.lim+A.tol)over=true;
+  document.body.classList.toggle('over',over);
+  if(over&&Date.now()-A.last>(k>L.lim+A.tol+15?3000:8000)){
+    A.last=Date.now();beep();navigator.vibrate&&navigator.vibrate([200,100,200]);
+    if(Date.now()-A.vt>30000){A.vt=Date.now();sayf('Slow down. Limit '+(S.unit==='kmh'?L.lim:Math.round(L.lim/1.609)))}
+  }
+}
+function breakTick(){if(S.mov-A.lb>7200){A.lb=S.mov;sayf('You have been riding for two hours. Take a break.')}}
+document.querySelectorAll('.sign').forEach(e=>e.onclick=()=>{const v=prompt('Set speed limit in km/h (leave blank for automatic)',ls.bd_man||'');if(v===null)return;if(+v>0)ls.bd_man=+v;else ls.removeItem('bd_man')});
+/* crash detection */
+addEventListener('devicemotion',e=>{const a=e.accelerationIncludingGravity;if(!a||!A.crash||sosT)return;if(Math.hypot(a.x,a.y,a.z)/9.81>6&&spd>4)imp=Date.now()});
+setInterval(()=>{if(!imp||!A.crash||sosT)return;const dt=Date.now()-imp;if(dt>8000&&dt<30000&&spd<1){imp=0;sosStart()}else if(dt>=30000)imp=0},1000);
+function sosStart(){
+  if(sosT)return;let n=30;$('#sos').hidden=false;$('#sosT').textContent=n;$('#sosSend').hidden=true;sayf("Crash detected. Tap I'm OK to cancel.");
+  sosT=setInterval(()=>{n--;$('#sosT').textContent=Math.max(n,0);beep(1200,400);navigator.vibrate&&navigator.vibrate(600);if(n===0){$('#sosSend').hidden=false;sayf('Send an emergency message now.')}},1000);
+}
+$('#sosOk').onclick=()=>{clearInterval(sosT);sosT=null;imp=0;$('#sos').hidden=true};
+const where=()=>S.pos?`https://maps.google.com/?q=${S.pos.latitude.toFixed(5)},${S.pos.longitude.toFixed(5)}`:'(location unknown)';
+const sms=t=>location.href=`sms:${A.ec}?body=${encodeURIComponent(t+' '+where())}`;
+$('#sosSend').onclick=$('#sosMsg').onclick=()=>sms('SOS! I may have had an accident on my bike. My location:');
+$('#shareLoc').onclick=()=>navigator.share?navigator.share({title:'My location',text:'I am here: '+where()}).catch(()=>{}):sms('I am here:');
+$('#sosCall').onclick=$('#call').onclick=()=>location.href='tel:112';
+/* safety settings */
+const TOL=[0,5,10];
+function paintSafety(){
+  $('#sAl').textContent='Speed alerts: '+(A.on?'On':'Off');$('#sTol').textContent='Allow +'+A.tol+' km/h';
+  $('#sEst').textContent='Estimated limits: '+(A.est?'alert':'show only');$('#sCr').textContent='Crash detection: '+(A.crash?'On':'Off');
+}
+$('#sAl').onclick=()=>{A.on=!A.on;ls.bd_al=A.on?1:0;paintSafety()};
+$('#sTol').onclick=()=>{A.tol=TOL[(TOL.indexOf(A.tol)+1)%3];ls.bd_tol=A.tol;paintSafety()};
+$('#sEst').onclick=()=>{A.est=!A.est;ls.bd_est=A.est?1:0;paintSafety()};
+$('#sCr').onclick=()=>{A.crash=!A.crash;ls.bd_cr=A.crash?1:0;paintSafety()};
+$('#sTest').onclick=sosStart;$('#ec').value=A.ec;$('#ec').oninput=e=>{A.ec=e.target.value.trim();ls.bd_ec=A.ec};paintSafety();
+
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
