@@ -35,10 +35,12 @@ nav{grid-area:n;display:flex;border-top:1px solid var(--line)}
 nav button{flex:1;border:0;border-radius:0;padding:.7rem 0;font-size:1.2rem;color:var(--dim)}
 nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 /* ride */
-#ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto "k" auto/minmax(0,1fr)}
+#ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto/minmax(0,1fr)}
 #speedbox{grid-area:s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
-#speed{display:flex;align-items:stretch;justify-content:center;gap:2.5vmin;height:min(38dvh,calc((100vw - 4rem)/1.85))}
-#unit{font-size:1.6rem;color:var(--dim);font-weight:700;margin-top:.3rem}
+#speed{--n:1;--h:min(38dvh,calc((100vw - 4rem)/(var(--n)*.56 + (var(--n) - 1)*.08)));display:flex;align-items:stretch;justify-content:center;height:var(--h);gap:calc(var(--h)*.08);transition:height .2s ease,gap .2s ease}
+#unit{display:flex;margin-top:.5rem;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:1.25rem;font-weight:700;color:var(--dim);cursor:pointer}
+#unit span{padding:.3rem 1.1rem;transition:background .2s}
+#unit span.on{background:var(--acc);color:var(--bg)}
 .grid{grid-area:t;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;border-top:1px solid var(--line);padding-top:.4rem;text-align:center}
 .grid b{display:block;font-size:clamp(1.6rem,6vmin,3.4rem);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
 .grid small{font-size:1rem;color:var(--dim)}
@@ -95,7 +97,8 @@ button svg{display:block;margin:auto;width:1em;height:1em}
 .dg polygon{fill:var(--line)}.dg polygon.on{fill:var(--fg)}
 body.over .dg polygon.on{fill:var(--bad)}
 /* side panel */
-#menu{border:0;padding:.2rem .4rem;font-size:1.7rem;line-height:0}
+#menu,#theme,#full{border:0;padding:.2rem .4rem;font-size:1.6rem;line-height:0}
+#theme.auto{color:var(--acc)}
 #scrim{position:fixed;inset:0;z-index:2999;background:#0008}
 #side{position:fixed;top:0;bottom:0;left:0;width:min(100%,30rem);z-index:3000;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);transform:translateX(-100%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
 #side.open{transform:none;visibility:visible;transition:transform .25s}
@@ -107,8 +110,8 @@ body.over .dg polygon.on{fill:var(--bad)}
   body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
   nav{flex-direction:column;border-top:0;border-right:1px solid var(--line)}
   nav button{flex:1;padding:0 1rem;box-shadow:none!important;font-size:1.2rem}
-  #ride.on{grid-template:"s t" 1fr "s m" auto "s k" auto/1.3fr 1fr}
-  #speed{height:min(58dvh,calc((50vw - 3rem)/1.85))}
+  #ride.on{grid-template:"s t" 1fr "s m" auto/1.3fr 1fr}
+  #speed{--h:min(58dvh,calc((50vw - 3rem)/(var(--n)*.56 + (var(--n) - 1)*.08)))}
   .grid{border:0;align-content:center}
   #plist{min-height:2rem}
 }
@@ -116,7 +119,7 @@ body.over .dg polygon.on{fill:var(--bad)}
 </style>
 </head>
 <body data-theme="night">
-<header><button id="menu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2.5H3zM3 10.75h18v2.5H3zM3 15.5h18V18H3z"/></svg></button><span id="clock">--:--</span><span><i id="gps"></i><span id="acc">GPS</span></span><span id="wx"></span><span id="bat"></span></header>
+<header><button id="menu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2.5H3zM3 10.75h18v2.5H3zM3 15.5h18V18H3z"/></svg></button><span id="clock">--:--</span><span><i id="gps"></i><span id="acc">GPS</span></span><span id="wx"></span><span id="bat"></span><button id="theme" aria-label="Theme"></button><button id="full" aria-label="Fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></header>
 <div id="navbar" hidden>
   <div id="nArrow">⬆</div><div id="nDist">--</div>
   <div id="nMid"><div id="nTxt">--</div><div id="nRem"></div></div>
@@ -124,14 +127,13 @@ body.over .dg polygon.on{fill:var(--bad)}
 </div>
 <main>
   <section id="ride" class="view on">
-    <div id="speedbox"><div id="signbox"><div class="sign">–</div><small id="lsrc"></small></div><div id="speed" role="img"></div><div id="unit">km/h</div><div id="road" class="note"></div></div>
+    <div id="speedbox"><div id="signbox"><div class="sign">–</div><small id="lsrc"></small></div><div id="speed" role="img"></div><div id="unit" role="button" aria-label="Switch speed unit"><span data-u="kmh">km/h</span><span data-u="mph">mph</span></div><div id="road" class="note"></div></div>
     <div class="grid">
       <div><b id="dist">0.0</b><small id="dlab">km today</small></div><div><b id="avg">0.0</b><small>avg</small></div><div><b id="max">0</b><small>top today</small></div>
       <div><b id="time">0:00</b><small>riding today</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
     </div>
     <div id="mini"><span id="mTitle">Music off</span><button id="mPrev" aria-label="Previous"></button><button id="mPlay" aria-label="Play or pause"></button><button id="mNext" aria-label="Next"></button></div>
-    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button></div>
-  </section>
+    </section>
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
@@ -139,17 +141,17 @@ body.over .dg polygon.on{fill:var(--bad)}
     <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
-    <div class="row"><button class="src on" data-m="radio">Radio</button><button class="src" data-m="yt">YouTube</button><button class="src" data-m="file">My files</button></div>
+    <div class="row"><button class="src on" data-m="radio">Radio</button><button class="src" data-m="yt">Streaming</button><button class="src" data-m="file">My files</button></div>
     <div id="p_radio" class="row" style="flex:none"><input id="rq" placeholder="Station name"><button id="rgo" style="flex:0">Find</button>
       <div class="row" style="flex-basis:100%"><button class="chip" data-q="tag=lofi">Lofi</button><button class="chip" data-q="tag=rock">Rock</button><button class="chip" data-q="tag=bollywood">Bollywood</button><button class="chip" data-q="tag=electronic">Electronic</button><button class="chip" data-q="countrycode=IN">India</button></div></div>
-    <div id="p_yt" hidden style="flex:none;display:flex;flex-direction:column;gap:.5rem"><div class="row"><input id="yturl" placeholder="Paste YouTube video or playlist link"><button id="ytgo" style="flex:0">Load</button></div><div id="ytw"><div id="ytp"></div></div></div>
+    <div id="p_yt" hidden style="flex:none;display:flex;flex-direction:column;gap:.5rem"><div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YouTube Music</button></div><small class="note">Those open their own apps; control them from the notification shade. Or play a YouTube video or playlist here:</small><div class="row"><input id="yturl" placeholder="Paste YouTube video or playlist link"><button id="ytgo" style="flex:0">Load</button></div><div id="ytw"><div id="ytp"></div></div></div>
     <div id="p_file" hidden class="row" style="flex:none"><button id="add">Add songs from phone</button><input id="files" type="file" accept="audio/*" multiple hidden></div>
     <div><div id="title">Nothing playing</div><div id="sub">Pick a source above</div></div>
     <input id="seek" type="range" min="0" max="100" value="0" hidden>
     <div class="row ctl"><button id="prev" aria-label="Previous"></button><button id="play" aria-label="Play or pause"></button><button id="next" aria-label="Next"></button></div>
     <div class="row" style="align-items:center;flex:none"><button id="vDn" style="flex:0" aria-label="Volume down">−</button><input id="vol" type="range" min="0" max="100" value="100" aria-label="Volume"><button id="vUp" style="flex:0" aria-label="Volume up">+</button><span id="vv" style="flex:0">100</span></div>
     <div id="plist"></div>
-    <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
+    
   </section>
 </main>
 <nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button></nav>
@@ -161,10 +163,10 @@ body.over .dg polygon.on{fill:var(--bad)}
     <div id="tweek"></div>
     <p class="note" id="tTot"></p>
     <div id="tlist"></div>
-    <p class="note">Your rides and daily stats are recorded automatically while the app is open, and saved only on this phone. Clearing browser data erases them, so use Export backup now and then.</p>
+    <p class="note" id="tStore"></p>
     <div class="row"><input id="rname" placeholder="Your name"><input id="rbike" placeholder="Bike, e.g. Classic 350"></div>
-    <div class="row"><button id="tExp">Export backup</button><button id="tImp">Import</button><button id="tClr">Delete all</button></div>
-    <input id="tFile" type="file" accept="application/json" hidden>
+    <div class="row"><button id="tClr">Delete all data</button></div>
+    
   </section>
   <section id="safety" class="pane">
     <div class="row"><button id="sAl"></button><button id="sTol"></button></div>
@@ -180,7 +182,7 @@ body.over .dg polygon.on{fill:var(--bad)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=s=>document.querySelector(s),ls=localStorage;
-const S={unit:ls.bd_unit||'kmh',theme:ls.bd_theme||'night',prof:ls.bd_prof||'car',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
+const S={unit:ls.bd_unit||'kmh',theme:ls.bd_tm||'auto',prof:ls.bd_prof||'car',dist:+ls.bd_dist||0,max:+ls.bd_max||0,mov:+ls.bd_mov||0,last:null,lastT:0,pos:null,follow:true};
 const N={on:false,steps:[],si:1,pi:1,dn:999,pts:[],dest:null,off:0,rr:0,said:{},voice:true,v:8};
 const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
 const mult=()=>S.unit==='kmh'?3.6:2.23694,dmul=()=>S.unit==='kmh'?.001:.000621371;
@@ -189,16 +191,40 @@ const card=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
 const fd=m=>S.unit==='kmh'?(m<1000?Math.round(m/10)*10+' m':(m/1000).toFixed(1)+' km'):(m<305?Math.round(m*3.281/10)*10+' ft':(m/1609).toFixed(1)+' mi');
 
 /* ---------- UI ---------- */
-function applyTheme(){document.body.dataset.theme=S.theme;ls.bd_theme=S.theme}
+function sunTimes(lat,lon,t){ // sunrise & sunset (ms) for the local date of t, standard solar equations
+  const R=Math.PI/180,m=new Date(t);m.setHours(12,0,0,0);
+  const n=Math.round(m.getTime()/864e5+2440587.5-2451545+lon/360),Js=n-lon/360;
+  const M=(357.5291+.98560028*Js)%360,C=1.9148*Math.sin(M*R)+.02*Math.sin(2*M*R)+.0003*Math.sin(3*M*R);
+  const lam=(M+C+180+102.9372)%360,Jt=2451545+Js+.0053*Math.sin(M*R)-.0069*Math.sin(2*lam*R);
+  const sd=Math.sin(lam*R)*Math.sin(23.4397*R),cd=Math.cos(Math.asin(sd));
+  const cw=(Math.sin(-.833*R)-Math.sin(lat*R)*sd)/(Math.cos(lat*R)*cd);
+  if(cw<-1||cw>1)return null;
+  const w=Math.acos(cw)/R,f=j=>(j-2440587.5)*864e5;return[f(Jt-w/360),f(Jt+w/360)];
+}
+function isDay(){
+  const n=new Date();
+  if(S.pos){const r=sunTimes(S.pos.latitude,S.pos.longitude,n.getTime());if(r)return n>=r[0]&&n<r[1]}
+  const h=n.getHours()+n.getMinutes()/60;return h>=6.5&&h<18.5; // fallback until GPS is ready
+}
+const TI={
+  auto:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
+  day:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  night:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>'};
+function applyTheme(){
+  const th=S.theme==='auto'?(isDay()?'day':'night'):S.theme;
+  document.body.dataset.theme=th;ls.bd_tm=S.theme;
+  $('#theme').innerHTML=TI[S.theme];$('#theme').className=S.theme;$('#theme').setAttribute('aria-label','Theme: '+S.theme);
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=th==='day'?'#f6f5ef':'#111315';
+}
 const SG=(()=>{const t=9,h=(x1,x2,y)=>[[x1,y],[x1+t/2,y-t/2],[x2-t/2,y-t/2],[x2,y],[x2-t/2,y+t/2],[x1+t/2,y+t/2]],v=(x,y1,y2)=>[[x,y1],[x+t/2,y1+t/2],[x+t/2,y2-t/2],[x,y2],[x-t/2,y2-t/2],[x-t/2,y1+t/2]],f=a=>a.map(q=>q.join(',')).join(' ');
   return{a:f(h(8,48,5)),b:f(v(51,8,47)),c:f(v(51,53,92)),d:f(h(8,48,95)),e:f(v(5,53,92)),f:f(v(5,8,47)),g:f(h(8,48,50))}})();
 const SD={0:'abcdef',1:'bc',2:'abdeg',3:'abcdg',4:'bcfg',5:'acdfg',6:'acdefg',7:'abc',8:'abcdefg',9:'abcdfg'};
 const digit=ch=>{const on=SD[ch]||'';return '<svg class="dg" viewBox="0 0 56 100" aria-hidden="true">'+Object.keys(SG).map(k=>`<polygon class="${on.includes(k)?'on':''}" points="${SG[k]}"/>`).join('')+'</svg>'};
-const digits=n=>String(n).padStart(3,' ').slice(-3).split('').map(digit).join('');
+const digits=n=>String(Math.min(n,999)).split('').map(digit).join(''); // 1 digit <10, 2 digits <100, 3 digits above
 let spShown=-1;
 function render(v){
-  $('#unit').textContent=S.unit==='kmh'?'km/h':'mph';$('#dlab').textContent=S.unit==='kmh'?'km today':'mi today';
-  if(v!=null){const t=Math.round(v*mult());if(t!==spShown){spShown=t;$('#speed').innerHTML=$('#mSpeed').innerHTML=digits(t);$('#speed').setAttribute('aria-label',t+(S.unit==='kmh'?' kilometres per hour':' miles per hour'))}}
+  document.querySelectorAll('#unit span').forEach(e=>e.classList.toggle('on',e.dataset.u===S.unit));$('#dlab').textContent=S.unit==='kmh'?'km today':'mi today';
+  if(v!=null){const t=Math.round(v*mult());if(t!==spShown){spShown=t;$('#speed').style.setProperty('--n',String(Math.min(t,999)).length);$('#speed').innerHTML=$('#mSpeed').innerHTML=digits(t);$('#speed').setAttribute('aria-label',t+(S.unit==='kmh'?' kilometres per hour':' miles per hour'))}}
   $('#dist').textContent=(S.dist*dmul()).toFixed(1);
   $('#avg').textContent=S.mov>5?(S.dist/S.mov*mult()).toFixed(1):'0.0';
   $('#max').textContent=Math.round(S.max*mult());$('#time').textContent=fmtT(S.mov);
@@ -212,9 +238,11 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   if(b.dataset.v==='trips')renderTrips();
   if(b.dataset.v==='music'&&!musicInit){musicInit=true;if(!Q.radio.length)radio('tag=lofi')}
 });
-$('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
-$('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
+$('#unit').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(S.v||0)};
+$('#theme').onclick=()=>{S.theme={auto:'day',day:'night',night:'auto'}[S.theme];applyTheme()};
+setInterval(()=>{if(S.theme==='auto')applyTheme()},60000);
 $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+if(matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches)$('#full').hidden=true; // already full screen when installed
 
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
 addEventListener('resize',()=>{sizeMap();mapFollowNow()});
@@ -232,10 +260,11 @@ function onPos(p){
     if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);if(T.cur){T.cur.dist+=d;T.cur.mov+=dt;T.cur.max=Math.max(T.cur.max,v)}}
     S.last=c;S.lastT=t;
   }
-  render(v);
+  S.v=v;render(v);
   if(c.heading!=null&&!isNaN(c.heading)&&v>0)$('#hdg').textContent=card(c.heading);
   if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
   if(c.heading!=null&&!isNaN(c.heading)&&v>1.5)M.h=c.heading;
+  if(!S.sunOk){S.sunOk=1;applyTheme()}
   spd=v;if(map&&$('#mapv').classList.contains('on'))mapTick(c,v);
   limitTick(c);alertTick(v);breakTick();tripTick(c,v);
   navTick(c);save();weather();
@@ -676,16 +705,6 @@ async function renderTrips(){
 }
 $('#rname').value=ls.bd_name||'';$('#rbike').value=ls.bd_bike||'';
 $('#rname').oninput=e=>ls.bd_name=e.target.value.trim();$('#rbike').oninput=e=>ls.bd_bike=e.target.value.trim();
-$('#tExp').onclick=async()=>{
-  const data={v:1,exported:new Date().toISOString(),settings:Object.fromEntries(Object.entries(ls).filter(([k])=>k.startsWith('bd_'))),trips:(await DB.all('trips'))||[]};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.download='bikedash-backup.json';a.click();
-};
-$('#tImp').onclick=()=>$('#tFile').click();
-$('#tFile').onchange=async e=>{
-  const f=e.target.files[0];if(!f)return;
-  try{const j=JSON.parse(await f.text());Object.entries(j.settings||{}).forEach(([k,v])=>{if(k.startsWith('bd_'))ls[k]=v});
-    for(const t of j.trips||[])if(t&&t.id&&Array.isArray(t.pts))await DB.put('trips',t);location.reload()}catch(x){alert('That file could not be read.')}
-};
 $('#tClr').onclick=async()=>{
   if(!confirm('Delete ALL trips, saved places and settings from this phone?'))return;
   await DB.clear('trips');await DB.del('kv','cur');Object.keys(ls).filter(k=>k.startsWith('bd_')).forEach(k=>ls.removeItem(k));location.reload();
@@ -695,7 +714,16 @@ DB.open().then(async()=>{
   if(c&&c.pts){T.cur=Object.assign({dist:0,mov:0,max:0,ov:0},c);const l=c.pts[c.pts.length-1];T.last=c.start+(l?l[3]*1000:0)}
   T.ready=true;dayCheck();if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
 });
-navigator.storage&&navigator.storage.persist&&navigator.storage.persist();
+async function storageInfo(){
+  let t='Your rides and stats are saved automatically on this phone.';
+  try{
+    const per=navigator.storage.persisted&&await navigator.storage.persisted(),e=navigator.storage.estimate&&await navigator.storage.estimate();
+    t+=(e?' Using '+(e.usage/1048576).toFixed(1)+' MB. ':' ')+(per?'Protected from automatic cleanup.':'To protect it from automatic cleanup, install the app to your home screen.');
+  }catch(x){}
+  $('#tStore').textContent=t;
+}
+(navigator.storage&&navigator.storage.persist?navigator.storage.persist():Promise.resolve()).then(storageInfo,storageInfo);
+addEventListener('pagehide',()=>{if(T.cur)DB.put('kv',T.cur,'cur')});
 /* side panel (Timeline + Safety) */
 let pane='trips';
 const sideShow=on=>{$('#side').classList.toggle('open',on);$('#scrim').hidden=!on};
@@ -703,7 +731,7 @@ function openSide(p){
   pane=p||pane;
   document.querySelectorAll('.pane').forEach(e=>e.classList.toggle('on',e.id===pane));
   document.querySelectorAll('.sb').forEach(b=>b.classList.toggle('on',b.dataset.p===pane));
-  sideShow(true);if(pane==='trips')renderTrips();
+  sideShow(true);if(pane==='trips'){renderTrips();storageInfo()}
   if(!(history.state&&history.state.side))history.pushState({side:1},'');
 }
 function closeSide(){if(history.state&&history.state.side)history.back();else sideShow(false)}
