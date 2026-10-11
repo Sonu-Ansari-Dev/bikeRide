@@ -32,7 +32,7 @@ main{grid-area:m;min-height:0;position:relative}
 .view.on{display:flex;flex-direction:column;gap:.5rem}
 #music:not(.on){display:flex;visibility:hidden;pointer-events:none}
 nav{grid-area:n;display:flex;border-top:1px solid var(--line)}
-nav button{flex:1;border:0;border-radius:0;padding:.7rem 0;font-size:1.4rem;color:var(--dim)}
+nav button{flex:1;border:0;border-radius:0;padding:.7rem 0;font-size:1.2rem;color:var(--dim)}
 nav button.on{color:var(--acc);box-shadow:inset 0 3px var(--acc)}
 /* ride */
 #ride.on{display:grid;grid-template:"s" 1fr "t" auto "m" auto "k" auto/minmax(0,1fr)}
@@ -80,6 +80,16 @@ button svg{display:block;margin:auto;width:1em;height:1em}
 #vol{flex:1;min-width:0;accent-color:var(--acc);height:2rem;border:0;padding:0}
 #vv{min-width:2.6rem;text-align:right;font-size:1.1rem;color:var(--dim)}
 #qx{font-size:1.6rem;line-height:1;padding:.3rem .8rem}
+#rcard{position:absolute;z-index:1000;left:.5rem;right:.5rem;bottom:1.4rem;background:var(--bg);border:1px solid var(--line);border-radius:.8rem;padding:.6rem;display:flex;flex-direction:column;gap:.4rem;box-shadow:0 2px 12px #0006}
+#rtitle{font-size:1.3rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rsub{color:var(--dim);font-size:1.05rem}
+#rchips{display:flex;gap:.4rem;flex-wrap:wrap}#rchips button{flex:1}
+#rstart{background:#1a73e8;color:#fff;border-color:#1a73e8}
+#res small,.trip small{display:block;color:var(--dim);font-size:.95rem;font-weight:500}
+#res .rh{color:var(--dim);font-size:.95rem;padding:.4rem .3rem .1rem}
+.day{color:var(--dim);font-size:1.1rem;margin-top:.6rem}
+.trip{border:1px solid var(--line);border-radius:.7rem;padding:.55rem .8rem;margin-top:.4rem}
+.trip>b{font-size:1.3rem}.trip .det{margin-top:.3rem}
 /* landscape phones: nav rail on the left, two-column ride screen */
 @media (orientation:landscape) and (max-height:560px){
   body{grid-template:"h h" auto "b b" auto "n m" 1fr/auto minmax(0,1fr)}
@@ -108,12 +118,12 @@ button svg{display:block;margin:auto;width:1em;height:1em}
       <div><b id="time">0:00</b><small>riding</small></div><div><b id="hdg">--</b><small>heading</small></div><div><b id="alt">--</b><small>alt m</small></div>
     </div>
     <div id="mini"><span id="mTitle">Music off</span><button id="mPrev" aria-label="Previous"></button><button id="mPlay" aria-label="Play or pause"></button><button id="mNext" aria-label="Next"></button></div>
-    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button><button id="reset">Reset</button></div>
+    <div class="row"><button id="units">km/h · mph</button><button id="theme">Day · Night</button><button id="full">Full</button><button id="reset">End trip</button></div>
   </section>
   <section id="mapv" class="view">
     <div class="row"><input id="q" placeholder="Search a place" autocomplete="off"><button id="qx" style="flex:0" aria-label="Clear" hidden>×</button><button id="go" style="flex:0">Go</button></div>
     <div id="res"></div>
-    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><div id="attr">© OpenStreetMap</div></div>
+    <div id="mapw"><div id="map"></div><div id="mhud"><b id="mSpeed">0</b><div class="sign">–</div></div><div id="attr">© OpenStreetMap</div><div id="rcard" hidden><div id="rtitle"></div><div id="rsub"></div><div id="rchips"></div><div class="row"><button id="rstart">Start</button><button id="rsave">Save</button><button id="rclose">Close</button></div></div></div>
     <div class="row"><button id="prof">Moto</button><button id="mmode">Heading-up</button><button id="follow">Following</button></div>
   </section>
   <section id="music" class="view">
@@ -129,7 +139,15 @@ button svg{display:block;margin:auto;width:1em;height:1em}
     <div id="plist"></div>
     <div class="row"><button id="spot">Open Spotify</button><button id="ytm">Open YT Music</button></div>
   </section>
-<section id="safety" class="view">
+<section id="trips" class="view">
+    <div class="grid" id="tsum"><div><b id="tN">0</b><small>trips</small></div><div><b id="tKm">0</b><small id="tKmL">km total</small></div><div><b id="tH">0</b><small>hours riding</small></div></div>
+    <div id="tlist"></div>
+    <p class="note">Trips are recorded automatically when you start riding and saved only on this phone. Clearing browser data erases them, so use Export backup now and then.</p>
+    <div class="row"><input id="rname" placeholder="Your name"><input id="rbike" placeholder="Bike, e.g. Classic 350"></div>
+    <div class="row"><button id="tExp">Export backup</button><button id="tImp">Import</button><button id="tClr">Delete all</button></div>
+    <input id="tFile" type="file" accept="application/json" hidden>
+  </section>
+  <section id="safety" class="view">
     <div class="row"><button id="sAl"></button><button id="sTol"></button></div>
     <div class="row"><button id="sEst"></button></div>
     <p class="note">Limits come from OpenStreetMap road data, fetched as you ride. Where a road has no limit tagged, the sign is dashed and shows an estimate for that road type. Tap any speed-limit sign to set a limit yourself.</p>
@@ -139,7 +157,7 @@ button svg{display:block;margin:auto;width:1em;height:1em}
     <p class="note">Crash detection is experimental: it watches for a hard impact followed by stopping, then sounds an alarm you can cancel. A web page cannot send texts by itself, so you tap Send. A break reminder also sounds every 2 hours of riding.</p>
   </section>
 </main>
-<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button><button data-v="safety">Safety</button></nav>
+<nav><button class="on" data-v="ride">Ride</button><button data-v="mapv">Map</button><button data-v="music">Music</button><button data-v="trips">Trips</button><button data-v="safety">Safety</button></nav>
 <div id="sos" hidden><h1>Crash detected</h1><div id="sosT">30</div><button id="sosOk">I'm OK</button><button id="sosSend" hidden>Send SOS message</button><button id="sosCall">Call 112</button></div>
 <audio id="au"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -168,12 +186,13 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav button,.view').forEach(e=>e.classList.remove('on'));
   b.classList.add('on');$('#'+b.dataset.v).classList.add('on');
   if(b.dataset.v==='mapv'){initMap();setTimeout(()=>{sizeMap();mapFollowNow()},50)}
+  if(b.dataset.v==='trips')renderTrips();
   if(b.dataset.v==='music'&&!musicInit){musicInit=true;if(!Q.radio.length)radio('tag=lofi')}
 });
 $('#units').onclick=()=>{S.unit=S.unit==='kmh'?'mph':'kmh';save();render(0)};
 $('#theme').onclick=()=>{S.theme=S.theme==='night'?'day':'night';applyTheme()};
 $('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
-$('#reset').onclick=()=>{if(confirm('Reset trip?')){S.dist=S.max=S.mov=A.lb=0;S.last=null;track&&track.setLatLngs([]);save();render(0)}};
+$('#reset').onclick=()=>{if(confirm('End and save this trip?'))endTrip()};
 setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);
 addEventListener('resize',()=>{sizeMap();mapFollowNow()});
 applyTheme();render(0);
@@ -187,7 +206,7 @@ function onPos(p){
   if(v==null)v=dt>0?d/dt:0;
   if(v<.8||c.accuracy>50)v=0;
   if(c.accuracy<=50){
-    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v);track&&track.addLatLng([c.latitude,c.longitude])}
+    if(S.last&&v>0){S.dist+=d;S.mov+=dt;S.max=Math.max(S.max,v)}
     S.last=c;S.lastT=t;
   }
   render(v);
@@ -195,7 +214,7 @@ function onPos(p){
   if(c.altitude!=null)$('#alt').textContent=Math.round(c.altitude);
   if(c.heading!=null&&!isNaN(c.heading)&&v>1.5)M.h=c.heading;
   spd=v;if(map&&$('#mapv').classList.contains('on'))mapTick(c,v);
-  limitTick(c);alertTick(v);breakTick();
+  limitTick(c);alertTick(v);breakTick();tripTick(c,v);
   navTick(c);save();weather();
 }
 const onErr=e=>{$('#gps').className='';$('#acc').textContent=e.code===1?'Allow location':'No GPS'};
@@ -214,8 +233,9 @@ let wxT=0;function weather(){
 }
 
 /* ---------- map ---------- */
-let map,me,track,rl,dmk,arrowEl;
-const M={mode:ls.bd_mm||'head',rot:0,h:0,lz:0};
+let map,me,acc,dmk,arrowEl,tripL,RL=[];
+const M={mode:ls.bd_mm||'head',rot:0,h:0,lz:0,restore:false};
+const P={dest:null,routes:[],sel:0};
 function sizeMap(){
   const W=$('#mapw').clientWidth,H=$('#mapw').clientHeight,el=$('#map');if(!W)return;
   if(M.mode==='head'){const o=H*.22,d=Math.ceil(Math.hypot(W,H+2*o));Object.assign(el.style,{width:d+'px',height:d+'px',left:(W-d)/2+'px',top:(H-d)/2+o+'px'})}
@@ -233,21 +253,22 @@ function initMap(){
   const p=S.pos?[S.pos.latitude,S.pos.longitude]:[15.49,73.83];
   map=L.map('map',{zoomControl:false,attributionControl:false,touchZoom:'center',doubleClickZoom:false}).setView(p,16);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:false}).addTo(map);
-  track=L.polyline([],{color:'#ffb81c',weight:5,smoothFactor:2}).addTo(map);
-  me=L.marker(p,{icon:L.divIcon({className:'',iconSize:[40,40],iconAnchor:[20,20],html:'<svg viewBox="0 0 40 40" width="40" height="40"><path d="M20 3 33 35 20 28 7 35Z" fill="#ffb81c" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
+  acc=L.circle(p,{radius:0,stroke:false,fillColor:'#1a73e8',fillOpacity:.14,interactive:false}).addTo(map);
+  me=L.marker(p,{icon:L.divIcon({className:'',iconSize:[60,60],iconAnchor:[30,30],html:'<svg viewBox="0 0 60 60" width="60" height="60"><path d="M30 30 18 4A30 30 0 0 1 42 4Z" fill="#1a73e8" fill-opacity=".35"/><circle cx="30" cy="30" r="10" fill="#1a73e8" stroke="#fff" stroke-width="3.5"/></svg>'}),interactive:false,keyboard:false}).addTo(map);
   arrowEl=me.getElement().firstChild;
   map.on('dragstart',()=>{S.follow=false;$('#follow').textContent='Re-centre'});
-  map.on('contextmenu',e=>{if(M.mode==='north')route(e.latlng.lat,e.latlng.lng)});
+  map.on('contextmenu',e=>{if(M.mode==='north')plan({name:'Dropped pin',sub:'',lat:e.latlng.lat,lon:e.latlng.lng})});
   $('#mapw').addEventListener('touchstart',()=>M.lz=Date.now()+20000,{passive:true});
   setDrag();
 }
 function mapFollowNow(){
   if(!map||!S.pos)return;const p=[S.pos.latitude,S.pos.longitude];
-  me.setLatLng(p);if(S.follow||M.mode==='head')map.setView(p,map.getZoom(),{animate:false});
+  me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(S.pos.accuracy||0,150));
+  if(S.follow||M.mode==='head')map.setView(p,map.getZoom(),{animate:false});
   setRot(M.h);if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;
 }
 function mapTick(c,v){ // only runs while the Map tab is visible
-  const p=[c.latitude,c.longitude];me.setLatLng(p);
+  const p=[c.latitude,c.longitude];me.setLatLng(p);acc.setLatLng(p).setRadius(Math.min(c.accuracy||0,150));
   if(v>1.5&&c.heading!=null&&!isNaN(c.heading)){if(arrowEl)arrowEl.style.transform=`rotate(${M.h}deg)`;setRot(M.h)}
   if(S.follow||M.mode==='head'){
     map.panTo(p,{animate:true,duration:.9,easeLinearity:1});
@@ -259,22 +280,44 @@ const modeLabel=()=>$('#mmode').textContent=M.mode==='head'?'Heading-up':'North-
 $('#mmode').onclick=()=>{M.mode=M.mode==='head'?'north':'head';ls.bd_mm=M.mode;modeLabel();S.follow=true;$('#follow').textContent='Following';sizeMap();setDrag();mapFollowNow()};
 $('#follow').onclick=()=>{S.follow=true;$('#follow').textContent='Following';mapFollowNow()};
 const profLabel=()=>$('#prof').textContent=S.prof==='bike'?'Cycle':'Moto';profLabel();
-$('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;profLabel();if(N.on)route(N.dest[0],N.dest[1],true)};
+$('#prof').onclick=()=>{S.prof=S.prof==='bike'?'car':'bike';ls.bd_prof=S.prof;profLabel();if(N.on)reroute();else if(P.dest&&P.routes.length)plan(P.dest)};
 
 /* ---------- search + navigation (free: OpenStreetMap Nominatim + OSRM) ---------- */
 const msg=t=>$('#res').innerHTML=`<div>${t}</div>`;
-$('#q').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+const PL={fav:JSON.parse(ls.bd_fav||'[]'),rec:JSON.parse(ls.bd_rec||'[]')};
+const isFav=p=>PL.fav.some(f=>f.lat===p.lat&&f.lon===p.lon);
 const qSync=()=>{$('#qx').hidden=!$('#q').value};
-$('#q').oninput=()=>{$('#res').innerHTML='';qSync()};
-$('#qx').onclick=()=>{$('#q').value='';$('#res').innerHTML='';qSync();$('#q').focus()};
+function row(p){
+  const d=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');
+  b.textContent=p.name;s.textContent=(p.sub||'')+(S.pos?(p.sub?' · ':'')+fd(hav(S.pos.latitude,S.pos.longitude,p.lat,p.lon)):'');
+  d.append(b,s);d.onclick=()=>selectPlace(p);return d;
+}
+function renderRes(a){const el=$('#res');el.innerHTML='';if(!a.length)return msg('No match. Try adding the town name.');a.forEach(p=>el.append(row(p)))}
+function showSaved(){
+  const el=$('#res');el.innerHTML='';
+  [['Saved',PL.fav],['Recent',PL.rec]].forEach(([h,l])=>{if(!l.length)return;const e=document.createElement('div');e.className='rh';e.textContent=h;el.append(e);l.forEach(p=>el.append(row(p)))});
+}
+function selectPlace(p){
+  $('#res').innerHTML='';$('#q').value=p.name;qSync();$('#q').blur();
+  PL.rec=[p,...PL.rec.filter(r=>r.lat!==p.lat||r.lon!==p.lon)].slice(0,8);ls.bd_rec=JSON.stringify(PL.rec);
+  plan(p);
+}
+const fromPhoton=f=>{const q=f.properties;return{name:q.name||q.street||'Place',sub:[q.street&&q.name?q.street:'',q.city||q.district||q.county||'',q.state||''].filter(Boolean).join(', '),lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]}};
+async function suggest(q){ // search-as-you-type via Photon (OpenStreetMap data)
+  try{const b=S.pos?`&lat=${S.pos.latitude}&lon=${S.pos.longitude}`:'';
+    const j=await(await fetch('https://photon.komoot.io/api/?limit=6&lang=en&q='+encodeURIComponent(q)+b)).json();
+    if($('#q').value.trim()===q)renderRes(j.features.map(fromPhoton));}catch(e){}
+}
+let qT;
+$('#q').onfocus=()=>{if(!$('#q').value)showSaved()};
+$('#q').oninput=()=>{qSync();clearTimeout(qT);const q=$('#q').value.trim();if(!q){showSaved();return}$('#res').innerHTML='';if(q.length>=3)qT=setTimeout(()=>suggest(q),450)};
+$('#q').onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
+$('#qx').onclick=()=>{$('#q').value='';qSync();showSaved();$('#q').focus()};
 $('#go').onclick=async()=>{
   const q=$('#q').value.trim();if(!q)return;msg('Searching…');
   const b=S.pos?`&viewbox=${S.pos.longitude-.6},${S.pos.latitude+.6},${S.pos.longitude+.6},${S.pos.latitude-.6}`:'';
-  try{
-    const a=await(await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=en&q='+encodeURIComponent(q)+b)).json();
-    $('#res').innerHTML='';if(!a.length)return msg('No match. Try adding the town name.');
-    a.forEach(p=>{const d=document.createElement('div');d.textContent=p.display_name.split(',').slice(0,3).join(',');
-      d.onclick=()=>{$('#res').innerHTML='';route(+p.lat,+p.lon)};$('#res').append(d)});
+  try{const a=await(await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=en&q='+encodeURIComponent(q)+b)).json();
+    renderRes(a.map(x=>({name:x.name||x.display_name.split(',')[0],sub:x.display_name.split(',').slice(1,3).join(',').trim(),lat:+x.lat,lon:+x.lon})));
   }catch(e){msg('Search needs an internet connection.')}
 };
 const AR={left:'⬅',right:'➡','slight left':'↖','slight right':'↗','sharp left':'↙','sharp right':'↘',straight:'⬆',uturn:'↩'};
@@ -289,29 +332,72 @@ function instr(s){
 const duck=f=>{au.volume=VOL*f;try{yt&&yt.setVolume&&yt.setVolume(VOL*f*100)}catch(e){}};
 const sayf=t=>{if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);u.onstart=()=>duck(.25);u.onend=u.onerror=()=>duck(1);speechSynthesis.speak(u)};
 const say=t=>N.voice&&sayf(t);
-async function route(lat,lon,quiet){
-  if(!S.pos)return msg('Waiting for GPS fix…');
-  initMap();
+async function fetchRoutes(lat,lon){
   const base=S.prof==='bike'?'routed-bike':'routed-car';
-  try{
-    const j=await(await fetch(`https://routing.openstreetmap.de/${base}/route/v1/driving/${S.pos.longitude},${S.pos.latitude};${lon},${lat}?overview=full&geometries=geojson&steps=true`)).json();
-    const r=j.routes&&j.routes[0];if(!r)throw 0;
-    N.steps=r.legs[0].steps;N.pts=r.geometry.coordinates.map(c=>[c[1],c[0]]);N.si=Math.min(1,N.steps.length-1);
-    N.dest=[lat,lon];N.off=0;N.pi=1;N.said={};N.v=r.distance/Math.max(r.duration,1);N.on=true;
-    rl&&map.removeLayer(rl);dmk&&map.removeLayer(dmk);
-    rl=L.polyline(N.pts,{color:'#3b9cff',weight:6,opacity:.85,smoothFactor:2}).addTo(map);
-    dmk=L.circleMarker([lat,lon],{radius:10,color:'#fff',weight:3,fillColor:'#5fd38d',fillOpacity:1}).addTo(map);
-    $('#navbar').hidden=false;
-    if(!quiet){if(M.mode==='north'){map.fitBounds(rl.getBounds(),{padding:[30,30]});S.follow=false;setTimeout(()=>{S.follow=true;$('#follow').textContent='Following';mapFollowNow()},5000)}say('Route ready. '+fd(r.distance)+'.')}
-    navTick(S.pos);
-  }catch(e){msg('Could not get a route. Check internet or try another place.')}
+  try{const j=await(await fetch(`https://routing.openstreetmap.de/${base}/route/v1/driving/${S.pos.longitude},${S.pos.latitude};${lon},${lat}?overview=full&geometries=geojson&steps=true&alternatives=true`)).json();
+    return j.routes&&j.routes.length?j.routes.slice(0,3):null}catch(e){return null}
 }
+const ll=r=>r.geometry.coordinates.map(c=>[c[1],c[0]]);
+function clearRoutes(){if(map){RL.forEach(l=>map.removeLayer(l));if(dmk)map.removeLayer(dmk)}RL=[];dmk=null;P.routes=[];$('#rcard').hidden=true}
+function drawRoutes(){
+  RL.forEach(l=>map.removeLayer(l));RL=[];
+  P.routes.forEach((r,i)=>{if(i===P.sel)return;const l=L.polyline(ll(r),{color:'#9aa0a6',weight:6,opacity:.9,smoothFactor:2}).addTo(map);l.on('click',()=>{P.sel=i;drawRoutes();showCard()});RL.push(l)});
+  const pts=ll(P.routes[P.sel]);
+  RL.push(L.polyline(pts,{color:'#fff',weight:10,smoothFactor:2}).addTo(map),L.polyline(pts,{color:'#1a73e8',weight:6,smoothFactor:2}).addTo(map));
+  if(dmk)map.removeLayer(dmk);
+  dmk=L.circleMarker([P.dest.lat,P.dest.lon],{radius:9,color:'#fff',weight:3,fillColor:'#d93025',fillOpacity:1}).addTo(map);
+}
+function showCard(){
+  $('#rcard').hidden=false;$('#rtitle').textContent=P.dest.name;
+  $('#rchips').innerHTML='';
+  P.routes.forEach((r,i)=>{const b=document.createElement('button');b.className=i===P.sel?'on':'';b.textContent=Math.max(1,Math.round(r.duration/60))+' min · '+fd(r.distance);b.onclick=()=>{P.sel=i;drawRoutes();showCard()};$('#rchips').append(b)});
+  const r=P.routes[P.sel];
+  $('#rsub').textContent='Arrive '+new Date(Date.now()+r.duration*1000).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+(P.routes.length>1?' · tap a route to switch':'');
+  $('#rstart').hidden=$('#rsave').hidden=false;$('#rsave').textContent=isFav(P.dest)?'Unsave':'Save';
+}
+async function plan(p){
+  initMap();if(!map)return msg('Map could not load. Check your connection.');
+  if(!S.pos)return msg('Waiting for GPS fix…');
+  if(N.on)endNav();clearRoutes();clearTrip();msg('Finding routes…');
+  const rs=await fetchRoutes(p.lat,p.lon);
+  if(!rs)return msg('Could not get a route. Check internet or try another place.');
+  $('#res').innerHTML='';P.dest=p;P.routes=rs;P.sel=0;drawRoutes();showCard();
+  if(M.mode==='head'){M.restore=true;$('#mmode').click()}
+  sizeMap();map.fitBounds(L.latLngBounds(ll(rs[0])),{paddingTopLeft:[30,30],paddingBottomRight:[30,190]});
+  S.follow=false;$('#follow').textContent='Re-centre';
+}
+function useRoute(r,d){
+  N.steps=r.legs[0].steps;N.pts=ll(r);N.si=Math.min(1,N.steps.length-1);N.dest=[d.lat,d.lon];
+  N.off=0;N.pi=1;N.said={};N.v=r.distance/Math.max(r.duration,1);N.on=true;$('#navbar').hidden=false;navTick(S.pos);
+}
+function startNav(){
+  const r=P.routes[P.sel];useRoute(r,P.dest);P.routes=[r];P.sel=0;drawRoutes();$('#rcard').hidden=true;
+  if(M.restore){M.restore=false;$('#mmode').click()}
+  S.follow=true;$('#follow').textContent='Following';mapFollowNow();$('#q').value='';qSync();say('Starting navigation. '+fd(r.distance));
+}
+async function reroute(){
+  const rs=await fetchRoutes(N.dest[0],N.dest[1]);if(!rs||!N.on)return;
+  useRoute(rs[0],{lat:N.dest[0],lon:N.dest[1]});P.routes=[rs[0]];P.sel=0;if(P.dest&&map)drawRoutes();
+}
+const clearTrip=()=>{if(tripL&&map)map.removeLayer(tripL);tripL=null};
+function closeCard(){
+  clearTrip();if(!N.on)clearRoutes();$('#rcard').hidden=true;
+  if(M.restore){M.restore=false;$('#mmode').click()}
+  S.follow=true;$('#follow').textContent='Following';mapFollowNow();
+}
+$('#rstart').onclick=startNav;$('#rclose').onclick=closeCard;
+$('#rsave').onclick=()=>{
+  const p=P.dest;if(!p)return;
+  if(isFav(p))PL.fav=PL.fav.filter(f=>!(f.lat===p.lat&&f.lon===p.lon));
+  else{const n=prompt('Save as (for example Home or Work)',p.name);if(!n)return;PL.fav.push({...p,name:n})}
+  ls.bd_fav=JSON.stringify(PL.fav);showCard();
+};
 function segD(p,a,b){const k=Math.cos(p[0]*Math.PI/180),x=(b[1]-a[1])*k,y=b[0]-a[0],px=(p[1]-a[1])*k,py=p[0]-a[0],l=x*x+y*y,t=l?Math.max(0,Math.min(1,(px*x+py*y)/l)):0;return Math.hypot(px-t*x,py-t*y)*111320}
 function navTick(c){
   if(!N.on)return;
   const p=[c.latitude,c.longitude];const md=nearest(p);
   N.off=md>Math.max(60,(c.accuracy||0)*2)?N.off+1:0;
-  if(N.off>=4&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return route(N.dest[0],N.dest[1],true)}
+  if(N.off>=4&&Date.now()-N.rr>15000){N.rr=Date.now();say('Rerouting');return reroute()}
   const s=N.steps[N.si];if(!s)return;
   const d=hav(p[0],p[1],s.maneuver.location[1],s.maneuver.location[0]),fin=s.maneuver.type==='arrive';
   if(fin&&d<30){say('You have arrived');return endNav()}
@@ -323,7 +409,7 @@ function navTick(c){
   $('#nArrow').textContent=ix.ar;$('#nDist').textContent=fd(d);$('#nTxt').textContent=ix.txt+(s.name?' · '+s.name:'');
   $('#nRem').textContent=fd(rem)+' · '+Math.max(1,Math.round(rem/N.v/60))+' min left';
 }
-function endNav(){N.on=false;$('#navbar').hidden=true;rl&&map.removeLayer(rl);dmk&&map.removeLayer(dmk);rl=dmk=null;'speechSynthesis' in window&&speechSynthesis.cancel()}
+function endNav(){N.on=false;$('#navbar').hidden=true;clearRoutes();P.dest=null;'speechSynthesis' in window&&speechSynthesis.cancel()}
 $('#nEnd').onclick=endNav;
 $('#nVoice').onclick=()=>{N.voice=!N.voice;$('#nVoice').textContent=N.voice?'🔊':'🔇';if(!N.voice)speechSynthesis.cancel()};
 
@@ -372,7 +458,7 @@ async function radio(p){
 }
 document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>radio(b.dataset.q));
 $('#rgo').onclick=()=>{const q=$('#rq').value.trim();if(q)radio('name='+encodeURIComponent(q))};
-$('#rq').onkeydown=e=>e.key==='Enter'&&$('#rgo').click();
+$('#rq').onkeydown=e=>{if(e.key==='Enter')$('#rgo').click()};
 /* youtube */
 function ytLoad(url){
   const l=(url.match(/[?&]list=([\w-]+)/)||[])[1],v=(url.match(/(?:v=|youtu\.be\/)([\w-]{11})/)||[])[1];
@@ -432,7 +518,7 @@ function alertTick(v){
   if(A.on&&L&&L.lim&&(L.src!=='est'||A.est)&&k>L.lim+A.tol)over=true;
   document.body.classList.toggle('over',over);
   if(over&&Date.now()-A.last>(k>L.lim+A.tol+15?3000:8000)){
-    A.last=Date.now();beep();navigator.vibrate&&navigator.vibrate([200,100,200]);
+    A.last=Date.now();if(T.cur)T.cur.ov++;beep();navigator.vibrate&&navigator.vibrate([200,100,200]);
     if(Date.now()-A.vt>30000){A.vt=Date.now();sayf('Slow down. Limit '+(S.unit==='kmh'?L.lim:Math.round(L.lim/1.609)))}
   }
 }
@@ -448,7 +534,7 @@ function sosStart(){
 $('#sosOk').onclick=()=>{clearInterval(sosT);sosT=null;imp=0;$('#sos').hidden=true};
 const where=()=>S.pos?`https://maps.google.com/?q=${S.pos.latitude.toFixed(5)},${S.pos.longitude.toFixed(5)}`:'(location unknown)';
 const sms=t=>location.href=`sms:${A.ec}?body=${encodeURIComponent(t+' '+where())}`;
-$('#sosSend').onclick=$('#sosMsg').onclick=()=>sms('SOS! I may have had an accident on my bike. My location:');
+$('#sosSend').onclick=$('#sosMsg').onclick=()=>sms('SOS! '+(ls.bd_name||'I')+' may have had an accident'+(ls.bd_bike?' on a '+ls.bd_bike:'')+'. Location:');
 $('#shareLoc').onclick=()=>navigator.share?navigator.share({title:'My location',text:'I am here: '+where()}).catch(()=>{}):sms('I am here:');
 $('#sosCall').onclick=$('#call').onclick=()=>location.href='tel:112';
 /* safety settings */
@@ -462,6 +548,107 @@ $('#sTol').onclick=()=>{A.tol=TOL[(TOL.indexOf(A.tol)+1)%TOL.length];ls.bd_tol=A
 $('#sEst').onclick=()=>{A.est=!A.est;ls.bd_est=A.est?1:0;paintSafety()};
 $('#sCr').onclick=()=>{A.crash=!A.crash;ls.bd_cr=A.crash?1:0;paintSafety()};
 $('#sTest').onclick=sosStart;$('#ec').value=A.ec;$('#ec').oninput=e=>{A.ec=e.target.value.trim();ls.bd_ec=A.ec};paintSafety();
+
+/* ---------- storage: trips timeline, profile, backup (IndexedDB + localStorage) ---------- */
+const DB={db:null,
+  open(){return new Promise(r=>{try{const q=indexedDB.open('bikedash',1);q.onupgradeneeded=()=>{q.result.createObjectStore('trips',{keyPath:'id'});q.result.createObjectStore('kv')};q.onsuccess=()=>{this.db=q.result;r(1)};q.onerror=()=>r(0)}catch(e){r(0)}})},
+  tx(st,mode,fn){if(!this.db)return Promise.resolve(null);return new Promise(r=>{try{const t=this.db.transaction(st,mode),q=fn(t.objectStore(st));t.oncomplete=()=>r(q?q.result:null);t.onerror=t.onabort=()=>r(null)}catch(e){r(null)}})},
+  put(st,v,k){return this.tx(st,'readwrite',s=>k===undefined?s.put(v):s.put(v,k))},
+  get(st,k){return this.tx(st,'readonly',s=>s.get(k))},
+  all(st){return this.tx(st,'readonly',s=>s.getAll())},
+  del(st,k){return this.tx(st,'readwrite',s=>s.delete(k))},
+  clear(st){return this.tx(st,'readwrite',s=>s.clear())}};
+const T={cur:null,last:0,sv:0,ready:false};let TR=[];
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function place(lat,lon){
+  try{const j=await(await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=en&lat=${lat}&lon=${lon}`)).json();const a=j.address||{};
+    return a.suburb||a.neighbourhood||a.village||a.town||a.city_district||a.city||a.road||j.name||''}catch(e){return ''}
+}
+function resetCounters(){S.dist=S.max=S.mov=A.lb=0;S.last=null;save();render(0)}
+function tripTick(c,v){ // trips start automatically when you move, end after 15 min stopped
+  if(!T.ready||v<2||c.accuracy>50)return;
+  T.last=Date.now();
+  if(!T.cur){const tr=T.cur={id:Date.now(),start:Date.now(),pts:[],ov:0,sName:'',eName:''};resetCounters();place(c.latitude,c.longitude).then(n=>tr.sName=n)}
+  const q=T.cur.pts,l=q[q.length-1];
+  if(!l||hav(l[0],l[1],c.latitude,c.longitude)>=25)q.push([+c.latitude.toFixed(5),+c.longitude.toFixed(5),Math.round(v*3.6),Math.round((Date.now()-T.cur.start)/1000)]);
+  if(Date.now()-T.sv>30000){T.sv=Date.now();DB.put('kv',T.cur,'cur')}
+}
+async function endTrip(){
+  const c=T.cur,d=S.dist,m=S.mov,x=S.max;T.cur=null;resetCounters();DB.del('kv','cur');
+  if(c&&c.pts.length>=3&&d>=300){
+    Object.assign(c,{end:T.last||Date.now(),dist:d,mov:m,max:x,avg:m>5?d/m:0});
+    await DB.put('trips',c);renderTrips();
+    const l=c.pts[c.pts.length-1];c.eName=await place(l[0],l[1]);await DB.put('trips',c);
+  }
+  renderTrips();
+}
+setInterval(()=>{if(T.cur&&T.ready&&Date.now()-T.last>9e5)endTrip()},60000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&T.cur)DB.put('kv',T.cur,'cur')});
+const dayLabel=d=>{const n=new Date(),y=new Date(Date.now()-864e5),same=(a,b)=>a.toDateString()===b.toDateString();return same(d,n)?'Today':same(d,y)?'Yesterday':d.toLocaleDateString([],{weekday:'long',day:'numeric',month:'short'})};
+function svgTrack(pts){
+  const k=Math.cos(pts[0][0]*Math.PI/180);let a=1e9,b=-1e9,c=1e9,d=-1e9;
+  pts.forEach(p=>{const x=p[1]*k,y=-p[0];a=Math.min(a,x);b=Math.max(b,x);c=Math.min(c,y);d=Math.max(d,y)});
+  const W=300,H=160,sc=Math.min((W-24)/((b-a)||1e-6),(H-24)/((d-c)||1e-6)),ox=(W-(b-a)*sc)/2,oy=(H-(d-c)*sc)/2;
+  const xy=p=>[ox+(p[1]*k-a)*sc,oy+(-p[0]-c)*sc],q=pts.map(p=>xy(p).map(n=>n.toFixed(1)).join(',')),s=xy(pts[0]),e=xy(pts[pts.length-1]);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:32dvh;background:var(--line);border-radius:.5rem;margin:.4rem 0"><polyline points="${q.join(' ')}" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${s[0]}" cy="${s[1]}" r="5" fill="var(--ok)"/><circle cx="${e[0]}" cy="${e[1]}" r="5" fill="var(--bad)"/></svg>`;
+}
+function showTrip(t){
+  document.querySelector('nav [data-v=mapv]').click();
+  setTimeout(()=>{
+    if(!map)return;clearTrip();clearRoutes();
+    if(M.mode==='head'){M.restore=true;$('#mmode').click()}
+    tripL=L.polyline(t.pts.map(p=>[p[0],p[1]]),{color:'#ffb81c',weight:5,smoothFactor:2}).addTo(map);
+    sizeMap();map.fitBounds(tripL.getBounds(),{paddingTopLeft:[30,30],paddingBottomRight:[30,150]});
+    S.follow=false;$('#follow').textContent='Re-centre';
+    $('#rcard').hidden=false;$('#rtitle').textContent='Trip · '+new Date(t.start).toLocaleDateString([],{day:'numeric',month:'short'});
+    $('#rsub').textContent=fd(t.dist)+' · '+fmtT(t.mov)+' riding';$('#rchips').innerHTML='';$('#rstart').hidden=$('#rsave').hidden=true;
+  },150);
+}
+function toggleTrip(c,t){
+  const o=c.querySelector('.det');if(o)return o.remove();
+  const d=document.createElement('div');d.className='det';d.onclick=e=>e.stopPropagation();
+  d.innerHTML=(t.pts.length>1?svgTrack(t.pts):'')+'<div class="row"><button class="tmap">Show on map</button><button class="tdel">Delete</button></div>';
+  d.querySelector('.tmap').onclick=()=>showTrip(t);
+  d.querySelector('.tdel').onclick=async()=>{if(confirm('Delete this trip?')){await DB.del('trips',t.id);renderTrips()}};
+  c.append(d);
+}
+async function renderTrips(){
+  TR=((await DB.all('trips'))||[]).sort((a,b)=>b.start-a.start);
+  const km=TR.reduce((a,t)=>a+t.dist,0)+S.dist,hrs=TR.reduce((a,t)=>a+t.mov,0)+S.mov;
+  $('#tN').textContent=TR.length;$('#tKm').textContent=Math.round(km*dmul());$('#tKmL').textContent=S.unit==='kmh'?'km total':'mi total';$('#tH').textContent=(hrs/3600).toFixed(1);
+  const el=$('#tlist');el.innerHTML='';let day='';
+  if(!TR.length)el.innerHTML='<p class="note">No trips yet. Start riding and your first trip will appear here.</p>';
+  const tm=x=>new Date(x).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  TR.forEach(t=>{
+    const dl=dayLabel(new Date(t.start));
+    if(dl!==day){day=dl;const h=document.createElement('div');h.className='day';h.textContent=dl;el.append(h)}
+    const c=document.createElement('div');c.className='trip';
+    c.innerHTML=`<b>${tm(t.start)} – ${tm(t.end)}</b><small>${esc(t.sName||'Start')} → ${esc(t.eName||'End')}</small><small>${fd(t.dist)} · ${fmtT(t.mov)} riding · avg ${Math.round(t.avg*mult())} · max ${Math.round(t.max*mult())} ${S.unit==='kmh'?'km/h':'mph'}${t.ov?' · '+t.ov+' alerts':''}</small>`;
+    c.onclick=()=>toggleTrip(c,t);el.append(c);
+  });
+}
+$('#rname').value=ls.bd_name||'';$('#rbike').value=ls.bd_bike||'';
+$('#rname').oninput=e=>ls.bd_name=e.target.value.trim();$('#rbike').oninput=e=>ls.bd_bike=e.target.value.trim();
+$('#tExp').onclick=async()=>{
+  const data={v:1,exported:new Date().toISOString(),settings:Object.fromEntries(Object.entries(ls).filter(([k])=>k.startsWith('bd_'))),trips:(await DB.all('trips'))||[]};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.download='bikedash-backup.json';a.click();
+};
+$('#tImp').onclick=()=>$('#tFile').click();
+$('#tFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const j=JSON.parse(await f.text());Object.entries(j.settings||{}).forEach(([k,v])=>{if(k.startsWith('bd_'))ls[k]=v});
+    for(const t of j.trips||[])if(t&&t.id&&Array.isArray(t.pts))await DB.put('trips',t);location.reload()}catch(x){alert('That file could not be read.')}
+};
+$('#tClr').onclick=async()=>{
+  if(!confirm('Delete ALL trips, saved places and settings from this phone?'))return;
+  await DB.clear('trips');await DB.del('kv','cur');Object.keys(ls).filter(k=>k.startsWith('bd_')).forEach(k=>ls.removeItem(k));location.reload();
+};
+DB.open().then(async()=>{
+  const c=await DB.get('kv','cur');
+  if(c&&c.pts){T.cur=c;const l=c.pts[c.pts.length-1];T.last=c.start+(l?l[3]*1000:0)}
+  T.ready=true;if(T.cur&&Date.now()-T.last>9e5)endTrip();renderTrips();
+});
+navigator.storage&&navigator.storage.persist&&navigator.storage.persist();
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
