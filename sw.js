@@ -1,4 +1,4 @@
-const C='bikedash-v12';
+const C='bikedash-v14';
 const A=['./','index.html','manifest.json','icon.svg','leaflet.js','leaflet.css','leaflet-rotate.js'];
 // each file is cached on its own, so one missing file can never block the install
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(A.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>{})))));self.skipWaiting()});
